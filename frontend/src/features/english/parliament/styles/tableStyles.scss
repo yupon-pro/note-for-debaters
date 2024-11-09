@@ -1,0 +1,92 @@
+/* Basic editor styles */
+.tiptap {
+
+  /* Table-specific styling */
+  table {
+    border-collapse: collapse;
+    margin: 0;
+    overflow: hidden;
+    table-layout: fixed;
+    width: 100%;
+
+    td{
+      border: 1px solid gray;
+      box-sizing: border-box;
+      min-width: 1em;
+      padding: 6px 8px;
+      position: relative;
+      vertical-align: top;
+      text-align: left;
+      height: 100px;
+
+      > * {
+        margin-bottom: 0;
+      }
+    }
+
+    .selectedCell:after {
+      background: gray;
+      content: "";
+      left: 0; right: 0; top: 0; bottom: 0;
+      pointer-events: none;
+      position: absolute;
+      z-index: 2;
+    }
+
+    .column-resize-handle {
+      background-color: purple;
+      bottom: -2px;
+      pointer-events: none;
+      position: absolute;
+      right: -2px;
+      top: 0;
+      width: 4px;
+    }
+  }
+
+  .tableWrapper {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+
+  &.resize-cursor {
+    cursor: ew-resize;
+    cursor: col-resize;
+  }
+
+  .upper-area {
+    width: 100%;
+    height: 7px;
+    top: 0;
+    left: 0;
+    position: absolute;
+  }
+
+  .bottom-area {
+    width: 100%;
+    height: 7px;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+  }
+
+  .right-area {
+    width: 7px;
+    height: 100%;
+    top: 0;
+    right: 2px;
+    position: absolute;
+  }
+
+  .left-area {
+    width: 7px;
+    height: 100%;
+    top: 0;
+    left: 2px;
+    position: absolute;
+  }
+
+  .hover-area:hover {
+    cursor: crosshair;
+  }
+}
