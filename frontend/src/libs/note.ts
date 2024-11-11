@@ -3,7 +3,7 @@
 import { auth } from "@/config/auth";
 import { PostNote, UpdateNote } from "@/types/noteType";
 import { FetchWithAuth } from "@/utils/fetchClass";
-import { isNote, isNotes } from "@/utils/NoteTypeGuard";
+import { isNote, isNotes } from "@/utils/noteTypeGuard";
 
 export async function getNote(id: string){
   const uri = `${process.env.SERVER_URI}/note/${id}`;

@@ -121,7 +121,7 @@ export default function Note({defaultContent, defaultPostData}:{defaultContent?:
         <InsertTable setInsertTableSize={setInsertTableSize} />
       </HStack>
       {postData && Object.entries(postData).map(([id, value]) => (
-        <Posting key={id} id={id} postingProps={value} setPostData={setPostData} />
+        <Posting key={id} postingId={id} postingProps={value} setPostData={setPostData} />
       ))}
       <TableEditor editor={editor} />
     </VStack>

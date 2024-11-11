@@ -7,17 +7,17 @@ import { RxCross1 } from "react-icons/rx";
 import { Box, Textarea } from "@chakra-ui/react";
 
 export default function Posting({
-  id,
+  postingId,
   postingProps, 
   setPostData
 }: {
-  id: string
+  postingId: string
   postingProps: PostingProps, 
   setPostData: Dispatch<SetStateAction<PostData | null>>
 }){
 return (
     <Rnd
-      key={id}
+      key={postingId}
       style={{ 
         border: "1px solid black", 
         padding: 5,
@@ -31,28 +31,28 @@ return (
         height: postingProps.height,
       }} 
       onResizeStop={(e, direction, ref) => {
-        setPostData((prev) => !prev ? prev : ({...prev, [id]: {...prev[id], width: Number(ref.style.width), height: Number(ref.style.height) }}))
+        setPostData((prev) => !prev ? prev : ({...prev, [postingId]: {...prev[postingId], width: Number(ref.style.width), height: Number(ref.style.height) }}))
       }}
       onDragStop={(e, data,) => {
-        setPostData((prev) => !prev ? prev : ({...prev, [id]: {...prev[id], x: data.x, y: data.y }}))
+        setPostData((prev) => !prev ? prev : ({...prev, [postingId]: {...prev[postingId], x: data.x, y: data.y }}))
       }}
     >
       <Textarea
-        id={id} 
+        id={postingId} 
         rows={10} 
         autoFocus={true}
         variant="flushed" 
         width="full" 
         height="full" 
         value={postingProps.content} 
-        onChange={(e) => setPostData(prev => !prev ? prev : ({...prev, [id]: {...prev[id], content:e.target.value }}))} 
+        onChange={(e) => setPostData(prev => !prev ? prev : ({...prev, [postingId]: {...prev[postingId], content:e.target.value }}))} 
         onInput={(e) => {
           const target = e.target as HTMLTextAreaElement;
-          setPostData((prev) => !prev ? prev : ({...prev, [id]: { ...prev[id], height: target.scrollHeight }}) )
+          setPostData((prev) => !prev ? prev : ({...prev, [postingId]: { ...prev[postingId], height: target.scrollHeight }}) )
         }}  
       />
       <Box 
-        id={id}
+        id={postingId}
         position="absolute"
         top={1} 
         right={0}
@@ -61,7 +61,7 @@ return (
         opacity={0.2} 
         _hover={{ opacity: 1, cursor: "pointer" }} 
         onDoubleClick={() => {
-          setPostData((prev) => !prev ? prev : Object.fromEntries(Object.entries(prev).filter(([key,]) => key !== id )))
+          setPostData((prev) => !prev ? prev : Object.fromEntries(Object.entries(prev).filter(([key,]) => key !== postingId )))
         }}
       >
         <RxCross1 size={20} />
