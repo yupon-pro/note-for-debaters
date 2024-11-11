@@ -2,7 +2,7 @@
 
 import { HStack, Input, VStack, } from "@chakra-ui/react";
 import { MouseEvent,  useEffect,  useState } from "react";
-import TableEditor from "./TableEditor";
+import TableEditor from "./Table";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@tiptap/react";
 import { CustomTableCell } from "./CustomTableCell";
