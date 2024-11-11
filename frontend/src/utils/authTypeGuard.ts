@@ -1,8 +1,6 @@
-import { AuthUser } from "@/types/auth";
+import { AuthUser } from "@/types/authType";
+import { isObj } from "./objTypeGuard";
 
-function isObj(value: unknown): value is object{
-  return value != null && typeof value === "object";
-}
 
 export function isUser(value: unknown): value is AuthUser{
   if(!isObj(value)) return false;

@@ -1,10 +1,10 @@
 "use server";
 
-import { AuthUser, SignInData } from "@/types/auth";
+import { AuthUser, SignInData } from "@/types/authType";
 import { isUser } from "@/utils/authTypeGuard";
 
 export async function getUser(signInData: SignInData):Promise<AuthUser>{
-  const uri = process.env.SERVER_URL;
+  const uri = process.env.SERVER_URI;
 
   if(!uri) throw new Error("URI Error");
   try{
