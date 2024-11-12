@@ -1,18 +1,29 @@
 import { AuthUser } from "./authType";
 
-export type Posting = {
-  postingId: string;
-  noteId: string;
-  user: AuthUser;
-  x: string;
-  y: string;
+type BasePostData = {
+  clientPostingId: string;
+  serverPostingId?: string;
+  noteId?: string;
+  content: string;
+}
+
+export type ClientPostData = BasePostData & {
+  width: number;
+  height: number;
+  x: number;
+  y: number;
+}
+
+export type ServerPostData = BasePostData & {
   width: string;
   height: string;
-  content: string;
+  x: string;
+  y: string;
+  user: AuthUser;
   updatedAt: string;
   createdAt: string;
 };
 
-export type PostPosting = Omit<Posting, "postingId" | "user" | "createdAt" | "updatedAt" >;
+export type PostPosting = Omit<ServerPostData, "serverPostingId" | "updatedAt" | "createdAt">;
 
-export type UpdatePosting = Pick<Posting, "postingId"> & Partial<Posting>;
+export type UpdatePosting = Pick<ServerPostData, "serverPostingId"> & Partial<ServerPostData>;

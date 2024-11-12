@@ -52,7 +52,7 @@ export async function postPosting(posting: PostPosting){
 }
 
 export async function updatePosting(posting: UpdatePosting){
-  const uri = `${process.env.SERVER_URI}/posting/${posting.postingId}`;
+  const uri = `${process.env.SERVER_URI}/posting/${posting.serverPostingId}`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
 

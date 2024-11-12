@@ -1,21 +1,28 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
-import { PostData, PostingProps } from "../types/posts";
 import { Rnd } from "react-rnd";
 import { RxCross1 } from "react-icons/rx";
 import { Box, Textarea } from "@chakra-ui/react";
+import { removePosting } from "../utils/posting";
+import { ClientPostData } from "@/types/postingType";
 
 export default function Posting({
   postingId,
-  postingProps, 
+  postData, 
   setPostData
 }: {
-  postingId: string
-  postingProps: PostingProps, 
-  setPostData: Dispatch<SetStateAction<PostData | null>>
+  postingId: string;
+  postData: ClientPostData; 
+  setPostData: Dispatch<SetStateAction<ClientPostData[] | null>>;
 }){
-return (
+
+  async function handleDeletePosting(){
+    setPostData((prev) => !prev ? prev : prev.filter((post) => post.clientPostingId !== postingId) )
+    await removePosting(postingId);
+  }
+
+  return (
     <Rnd
       key={postingId}
       style={{ 
@@ -25,16 +32,24 @@ return (
         isolation: "isolate",
       }}
       default={{ 
-        x: postingProps.x - 20,
-        y: postingProps.y,
-        width: postingProps.width, 
-        height: postingProps.height,
+        x: postData.x - 20,
+        y: postData.y,
+        width: postData.width, 
+        height: postData.height,
       }} 
       onResizeStop={(e, direction, ref) => {
-        setPostData((prev) => !prev ? prev : ({...prev, [postingId]: {...prev[postingId], width: Number(ref.style.width), height: Number(ref.style.height) }}))
+        setPostData((prev) => prev?.map((post) => post.clientPostingId !== postingId ? post : {
+          ...post, 
+          width: Number(ref.style.width), 
+          height: Number(ref.style.height)
+        }) || null);
       }}
       onDragStop={(e, data,) => {
-        setPostData((prev) => !prev ? prev : ({...prev, [postingId]: {...prev[postingId], x: data.x, y: data.y }}))
+        setPostData((prev) => prev?.map((post) => post.clientPostingId !== postingId ? post : {
+          ...post, 
+          x: data.x, 
+          y: data.y
+        }) || null);
       }}
     >
       <Textarea
@@ -44,11 +59,13 @@ return (
         variant="flushed" 
         width="full" 
         height="full" 
-        value={postingProps.content} 
-        onChange={(e) => setPostData(prev => !prev ? prev : ({...prev, [postingId]: {...prev[postingId], content:e.target.value }}))} 
+        value={postData.content} 
+        onChange={(e) => 
+          setPostData((prev) => prev?.map((post) => post.clientPostingId !== postingId ? post : {...post, content:e.target.value}) || null)
+        } 
         onInput={(e) => {
           const target = e.target as HTMLTextAreaElement;
-          setPostData((prev) => !prev ? prev : ({...prev, [postingId]: { ...prev[postingId], height: target.scrollHeight }}) )
+          setPostData((prev) => prev?.map((post) => post.clientPostingId !== postingId ? post : {...post, height: target.scrollHeight}) || null);
         }}  
       />
       <Box 
@@ -60,9 +77,7 @@ return (
         height={7}
         opacity={0.2} 
         _hover={{ opacity: 1, cursor: "pointer" }} 
-        onDoubleClick={() => {
-          setPostData((prev) => !prev ? prev : Object.fromEntries(Object.entries(prev).filter(([key,]) => key !== postingId )))
-        }}
+        onDoubleClick={handleDeletePosting}
       >
         <RxCross1 size={20} />
       </Box>
