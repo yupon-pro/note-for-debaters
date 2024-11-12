@@ -5,7 +5,7 @@ import { PostPosting, UpdatePosting } from "@/types/postingType";
 import { FetchWithAuth } from "@/utils/fetchClass";
 import { isPostings } from "@/utils/postingTypeGuard";
 
-export async function getPostings(){
+export async function getPostings(NoteId: string){
   const uri = `${process.env.SERVER_URI}/posting`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
@@ -13,6 +13,7 @@ export async function getPostings(){
   const init = {
     uri,
     accessToken,
+    body: { NoteId },
     tag: ["posting"]
   }
 

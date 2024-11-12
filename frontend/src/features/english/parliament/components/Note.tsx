@@ -18,7 +18,6 @@ import TextStyle from '@tiptap/extension-text-style'
 import { PostData } from "../types/posts";
 import Posting from "./Posting";
 import InsertTable from "./InsertTable";
-import { renderToString } from "react-dom/server";
 import { NoteData } from "../types/note";
 import { editNote, saveNote } from "../utils/note";
 import { useSession } from "next-auth/react";
@@ -29,12 +28,26 @@ const defaultColors = [
   {label: "black",code:"#0000ff"},
 ];
 
-export default function Note({defaultNote, defaultPostData}:{defaultNote: NoteData, defaultPostData?: PostData}){
-  const [noteTitle, setNoteTitle] = useState("");
-  const [noteData, setNoteData] = useState<NoteData>(defaultNote);
-  const [postData, setPostData] = useState<PostData|null>( defaultPostData || null);
-  const [insertTableSize, setInsertTableSize] = useState({ row: -1, column: -1});
-  const { data: session }= useSession();
+const defaultNoteContent =  `
+  <table>
+    <tbody>
+      <tr>
+        <td>OG</td>
+        <td>OO</td>
+      </tr>
+      <tr>
+        <td>CG</td>
+        <td>CO</td>
+      </tr>
+    </tbody>
+  </table>
+  `;
+
+export default function Note({ defaultNote, defaultPostData} :{ defaultNote?: NoteData, defaultPostData?: PostData }){
+  const [noteTitle, setNoteTitle] = useState(defaultNote?.title || "");
+  const [noteData, setNoteData] = useState<NoteData | null>(defaultNote || null);
+  const [postData, setPostData] = useState<PostData | null>( defaultPostData || null);
+  const { data: session } = useSession();
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -52,57 +65,60 @@ export default function Note({defaultNote, defaultPostData}:{defaultNote: NoteDa
       Color,
       TextStyle,
     ],
-    content: noteData.content,
+    content: noteData?.content,
   });
 
   useEffect(() => {
-    const noteContent = localStorage.getItem("note");
-    const postData = localStorage.getItem("post");
-    if(noteContent) {
-      setNoteData((prev) => prev.noteId ? prev : { content: noteContent });
-      editor?.commands.setContent(noteContent)
+    // read the data and write if necessary.
+    // we have the premise that the local saved data and server updated data are the same.
+    const localSavedNoteTitle = localStorage.getItem("title");
+    const localSavedNoteContent = localStorage.getItem("note");
+    const localSavedPostData = localStorage.getItem("post");
+
+    const isDefaultTitle = !!defaultNote?.title;
+    const isDefaultNoteData = !!defaultNote;
+    const isDefaultPostData = !!defaultPostData;
+
+    if(!isDefaultTitle && localSavedNoteTitle){
+      setNoteTitle(localSavedNoteTitle);
+
     }
-    if(postData) {
-      setPostData((prev) => postData ? JSON.parse(postData) : prev)
-    };
-  }, [editor]);
 
-  useEffect(() => {
-    if(insertTableSize.row === -1 || insertTableSize.column === -1) return;
-    const content = (
-      <table>
-        <tbody>
-          {new Array(insertTableSize.row + 1).fill(0).map((row) => (
-            <tr key={row}>
-              {new Array(insertTableSize.column + 1).fill(0).map((column) => (
-                <td key={`${row}-${column}`}>
-                  New Table
-                </td>
-              ))}
-            </tr>
-            )
-          )}
-        </tbody>
-      </table>
-    );
-    const contentHTML = renderToString(content)
-    editor?.commands.clearContent();
-    editor?.commands.setContent(contentHTML);
-    setNoteData((prev) => ({ ...prev, content: contentHTML}));
-  }, [editor,  insertTableSize]);
+    if(!isDefaultNoteData && localSavedNoteContent) {
+      setNoteData({ content: localSavedNoteContent });
+      editor?.commands.setContent(localSavedNoteContent);
 
+    }else if(!isDefaultNoteData){
+      setNoteData({ content: defaultNoteContent });
+      editor?.commands.setContent(defaultNoteContent);
+
+    }
+
+    if(!isDefaultPostData && localSavedPostData) {
+      setPostData(JSON.parse(localSavedPostData));
+
+    }
+
+  }, [editor, defaultNote, defaultPostData]);
+  
 
   async function handleTextSave(){
+    // save the note and posting.
     const noteContent = editor?.getHTML();
+    if(!noteContent || !noteData || !session?.user) return false;
 
-    if(noteContent) {
-      if(session?.user && noteData.noteId) {
-        await editNote({...noteData, title: noteTitle, noteId: noteData.noteId})
-      }else if(session?.user) {
-        await saveNote({...noteData, title: noteTitle, user: session?.user});
-      }
-      localStorage.setItem("note", noteContent)
-    };
+    if(noteData.noteId) {
+      await editNote({...noteData, title: noteTitle, noteId: noteData.noteId});
+
+    }else{
+      await saveNote({...noteData, title: noteTitle, user: session?.user});
+
+    }
+
+    
+
+    localStorage.setItem("title", noteTitle);
+    localStorage.setItem("note", noteContent);
     localStorage.setItem("post", JSON.stringify(postData));
   }
 
@@ -133,7 +149,7 @@ export default function Note({defaultNote, defaultPostData}:{defaultNote: NoteDa
           ))}
         </datalist>
         <Button colorScheme="teal" variant="solid" onClick={handleAddPosting} >Posting</Button>
-        <InsertTable setInsertTableSize={setInsertTableSize} />
+        <InsertTable editor={editor} setNoteData={setNoteData} />
       </HStack>
       {postData && Object.entries(postData).map(([id, value]) => (
         <Posting key={id} postingId={id} postingProps={value} setPostData={setPostData} />

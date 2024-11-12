@@ -4,15 +4,50 @@ import { Button } from "@/components/ui/button";
 import { PopoverArrow, PopoverBody, PopoverContent } from "@/components/ui/popover";
 import { PopoverRoot, PopoverTrigger, Table } from "@chakra-ui/react"
 import { Dispatch, SetStateAction, useState } from "react"
-import { TableSize } from "../types/tableSize";
+import { renderToString } from "react-dom/server";
+import { NoteData } from "../types/note";
+import { Editor } from '@tiptap/react'
 
 const matrix = new Array(5).fill(0).map(() => [0, 0, 0, 0, 0])
 
-export default function InsertTable({setInsertTableSize}: {setInsertTableSize: Dispatch<SetStateAction<TableSize>>}){
-  const [highlight, setHighlight] = useState({ row: -1, column: -1 })
+export default function InsertTable({ 
+  editor, 
+  setNoteData 
+}: {
+  editor: Editor | null, 
+  setNoteData: Dispatch<SetStateAction<NoteData | null>> 
+}){
+  const [highlight, setHighlight] = useState({ row: -1, column: -1 });
+
   function handleHighlight(row:number, column:number){
     setHighlight((prev) => ({...prev, row, column}));
   }
+
+  function handleInsertTable(){
+    if(highlight.row === -1 || highlight.column === -1) return;
+
+    const content = (
+      <table>
+        <tbody>
+          {new Array(highlight.row + 1).fill(0).map((_, rowIndex) => (
+            <tr key={rowIndex}>
+              {new Array(highlight.column + 1).fill(0).map((_, columnIndex) => (
+                <td key={`${rowIndex}-${columnIndex}`}>
+                  New Table
+                </td>
+              ))}
+            </tr>
+            )
+          )}
+        </tbody>
+      </table>
+    );
+    const contentHTML = renderToString(content)
+    editor?.commands.clearContent();
+    editor?.commands.setContent(contentHTML);
+    setNoteData((prev) => ({ ...prev, content: contentHTML}));
+  }
+
   return (
     <PopoverRoot>
       <PopoverTrigger asChild >
@@ -21,7 +56,12 @@ export default function InsertTable({setInsertTableSize}: {setInsertTableSize: D
       <PopoverContent>
         <PopoverArrow />
         <PopoverBody>
-          <Table.Root borderSpacing={2} size="sm" variant="outline" onMouseLeave={() => setHighlight((prev) => ({...prev, row: -1, column: -1}))} >
+          <Table.Root 
+            borderSpacing={2} 
+            size="sm" 
+            variant="outline" 
+            onMouseLeave={() => setHighlight((prev) => ({...prev, row: -1, column: -1}))} 
+          >
             <Table.Body>
               {matrix.map((row, rowIndex) => (
                 <Table.Row key={rowIndex}>
@@ -29,16 +69,13 @@ export default function InsertTable({setInsertTableSize}: {setInsertTableSize: D
                     <Table.Cell 
                       key={`${rowIndex}-${cellIndex}`} 
                       onMouseOver={() => handleHighlight(rowIndex, cellIndex)} 
-                      onDoubleClick={() => {
-                        console.log("************************")
-                        setInsertTableSize((prev) => ({...prev, row: highlight.row, column: highlight.column}))
-                      }}
+                      onDoubleClick={handleInsertTable}
                       width={10}
                       height={10} 
                       border="1px solid black"
                       backgroundColor={ 
-                        (rowIndex >= 0 && rowIndex <= highlight.row) && 
-                        (cellIndex >= 0 && cellIndex <= highlight.column) ?
+                        ( 0 <= rowIndex && rowIndex <= highlight.row) && 
+                        ( 0 <= cellIndex && cellIndex <= highlight.column) ?
                         "white" : "gray.500"
                       }
                     >
