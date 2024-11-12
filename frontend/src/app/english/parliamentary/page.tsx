@@ -1,13 +1,13 @@
 import { auth } from "@/config/auth";
 import Note from "@/features/english/parliament/components/Note";
-import { getNoteWithCommand } from "@/features/english/parliament/utils/note";
-import { getPostingsInNote } from "@/features/english/parliament/utils/posting";
+import { getNoteWithCommand } from "@/features/english/parliament/utils/clientNote";
+import { getMemosInNote, } from "@/features/english/parliament/utils/clientMemo";
 
 // this component must be sever component because it call function to fetch resources to server.
 
 export default async function Parliamentary(){
   let defaultNote;
-  let defaultPostings;
+  let defaultMemo;
 
   const session = await auth();
 
@@ -21,13 +21,13 @@ export default async function Parliamentary(){
         content: latestNote.content,
       };
 
-      const postings = await getPostingsInNote(latestNote.noteId);
+      const memos = await getMemosInNote(latestNote.noteId);
 
-      defaultPostings = postings;
+      defaultMemo = memos;
     }
   }  
   
   return (
-    <Note defaultNote={defaultNote} defaultPostData={defaultPostings} />
+    <Note defaultNote={defaultNote} defaultMemoData={defaultMemo} />
   );
 }

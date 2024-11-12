@@ -15,13 +15,14 @@ import TableRow from '@tiptap/extension-table-row'
 import Text from '@tiptap/extension-text'
 import { Color } from '@tiptap/extension-color'
 import TextStyle from '@tiptap/extension-text-style'
-import Posting from "./Posting";
 import InsertTable from "./InsertTable";
 import { NoteData } from "../types/note";
-import { editNote, saveNote } from "../utils/note";
+import { editNote, saveNote } from "../utils/clientNote";
 import { useSession } from "next-auth/react";
-import { editPostings, savePostings } from "../utils/posting";
-import { ClientPostData } from "@/types/postingType";
+import { ClientMemoData } from "@/types/memoType";
+import { editMemos, saveMemos } from "../utils/clientMemo";
+import Memo from "./Memo";
+
 
 const defaultColors = [
   {label: "red",code:"#ff0000"},
@@ -44,10 +45,10 @@ const defaultNoteContent =  `
   </table>
   `;
 
-export default function Note({ defaultNote, defaultPostData} :{ defaultNote?: NoteData, defaultPostData?: ClientPostData[] }){
+export default function Note({ defaultNote, defaultMemoData} :{ defaultNote?: NoteData, defaultMemoData?: ClientMemoData[] }){
   const [noteTitle, setNoteTitle] = useState(defaultNote?.title || "");
   const [noteData, setNoteData] = useState<NoteData | null>(defaultNote || null);
-  const [postData, setPostData] = useState<ClientPostData[] | null>(defaultPostData || null);
+  const [memoData, setMemoData] = useState<ClientMemoData[] | null>(defaultMemoData || null);
   const { data: session } = useSession();
 
   const editor = useEditor({
@@ -74,11 +75,11 @@ export default function Note({ defaultNote, defaultPostData} :{ defaultNote?: No
     // we have the premise that the local saved data and server updated data are the same.
     const localSavedNoteTitle = localStorage.getItem("title");
     const localSavedNoteContent = localStorage.getItem("note");
-    const localSavedPostData = localStorage.getItem("post");
+    const localSavedMemoData = localStorage.getItem("memo");
 
     const isDefaultTitle = !!defaultNote?.title;
     const isDefaultNoteData = !!defaultNote;
-    const isDefaultPostData = !!defaultPostData;
+    const isDefaultMemoData = !!defaultMemoData;
 
     if(!isDefaultTitle && localSavedNoteTitle){
       setNoteTitle(localSavedNoteTitle);
@@ -100,16 +101,16 @@ export default function Note({ defaultNote, defaultPostData} :{ defaultNote?: No
 
     }
 
-    if(!isDefaultPostData && localSavedPostData) {
-      setPostData(JSON.parse(localSavedPostData));
+    if(!isDefaultMemoData && localSavedMemoData) {
+      setMemoData(JSON.parse(localSavedMemoData));
 
     }
 
-  }, [editor, defaultNote, defaultPostData]);
+  }, [editor, defaultNote, defaultMemoData]);
   
 
   async function handleTextSave(){
-    // save the note and posting.
+    // save the note and memo.
     const noteContent = editor?.getHTML();
     if(!noteContent || !noteData) return false;
 
@@ -126,21 +127,21 @@ export default function Note({ defaultNote, defaultPostData} :{ defaultNote?: No
 
       }
 
-      if(postData){
-        const saveData = postData.map((post) => ({
-          ...post, 
+      if(memoData){
+        const saveData = memoData.map((memo) => ({
+          ...memo, 
           user,
-          x: post.x.toString(),
-          y: post.y.toString(),
-          width: post.width.toString(),
-          height: post.height.toString(),
+          x: memo.x.toString(),
+          y: memo.y.toString(),
+          width: memo.width.toString(),
+          height: memo.height.toString(),
         }));
 
-        const registers = saveData.filter((post) => !post.serverPostingId);
-        const updates = saveData.filter((post) => !post.serverPostingId);
+        const registers = saveData.filter((memo) => !memo.serverMemoId);
+        const updates = saveData.filter((memo) => !memo.serverMemoId);
 
-        await savePostings(registers);
-        await editPostings(updates);
+        await saveMemos(registers);
+        await editMemos(updates);
 
       }
     }
@@ -148,21 +149,21 @@ export default function Note({ defaultNote, defaultPostData} :{ defaultNote?: No
 
     localStorage.setItem("title", noteTitle);
     localStorage.setItem("note", noteContent);
-    localStorage.setItem("post", JSON.stringify(postData));
+    localStorage.setItem("memo", JSON.stringify(memoData));
   }
 
-  function handleAddPosting(e: MouseEvent<HTMLButtonElement>){
+  function handleAddMemo(e: MouseEvent<HTMLButtonElement>){
     const id = crypto.randomUUID();
     const defaultData = {
-      clientPostingId: id,
+      clientMemoId: id,
       noteId: noteData?.noteId,
-      content: "posting",
+      content: "memo",
       width: 200,
       height: 100,
       x:e.pageX,
       y:e.pageY
     }
-    setPostData((prev) => !prev ? ([defaultData]) : ([ ...prev, defaultData ]))
+    setMemoData((prev) => !prev ? ([defaultData]) : ([ ...prev, defaultData ]))
   }
 
   return(
@@ -179,11 +180,11 @@ export default function Note({ defaultNote, defaultPostData} :{ defaultNote?: No
             <option key={color.code} value={color.code} />
           ))}
         </datalist>
-        <Button colorScheme="teal" variant="solid" onClick={handleAddPosting} >Posting</Button>
+        <Button colorScheme="teal" variant="solid" onClick={handleAddMemo} >memo</Button>
         <InsertTable editor={editor} setNoteData={setNoteData} />
       </HStack>
-      {postData && Object.entries(postData).map(([id, value]) => (
-        <Posting key={id} postingId={id} postData={value} setPostData={setPostData} />
+      {memoData && Object.entries(memoData).map(([id, value]) => (
+        <Memo key={id} memoId={id} memoData={value} setMemoData={setMemoData} />
       ))}
       <TableEditor editor={editor} />
     </VStack>
