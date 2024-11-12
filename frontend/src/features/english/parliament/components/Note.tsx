@@ -19,6 +19,9 @@ import { PostData } from "../types/posts";
 import Posting from "./Posting";
 import InsertTable from "./InsertTable";
 import { renderToString } from "react-dom/server";
+import { NoteData } from "../types/note";
+import { editNote, saveNote } from "../utils/note";
+import { useSession } from "next-auth/react";
 
 const defaultColors = [
   {label: "red",code:"#ff0000"},
@@ -26,11 +29,12 @@ const defaultColors = [
   {label: "black",code:"#0000ff"},
 ];
 
-export default function Note({defaultContent, defaultPostData}:{defaultContent?: string, defaultPostData?: PostData}){
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState(defaultContent);
+export default function Note({defaultNote, defaultPostData}:{defaultNote: NoteData, defaultPostData?: PostData}){
+  const [noteTitle, setNoteTitle] = useState("");
+  const [noteData, setNoteData] = useState<NoteData>(defaultNote);
   const [postData, setPostData] = useState<PostData|null>( defaultPostData || null);
   const [insertTableSize, setInsertTableSize] = useState({ row: -1, column: -1});
+  const { data: session }= useSession();
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -48,15 +52,19 @@ export default function Note({defaultContent, defaultPostData}:{defaultContent?:
       Color,
       TextStyle,
     ],
-    content,
+    content: noteData.content,
   });
 
   useEffect(() => {
-    const content = localStorage.getItem("note");
+    const noteContent = localStorage.getItem("note");
     const postData = localStorage.getItem("post");
-    setContent((prev) => content ? content : prev);
-    setPostData((prev) => postData ? JSON.parse(postData) : prev);
-    if(content) editor?.commands.setContent(content);
+    if(noteContent) {
+      setNoteData((prev) => prev.noteId ? prev : { content: noteContent });
+      editor?.commands.setContent(noteContent)
+    }
+    if(postData) {
+      setPostData((prev) => postData ? JSON.parse(postData) : prev)
+    };
   }, [editor]);
 
   useEffect(() => {
@@ -80,15 +88,22 @@ export default function Note({defaultContent, defaultPostData}:{defaultContent?:
     const contentHTML = renderToString(content)
     editor?.commands.clearContent();
     editor?.commands.setContent(contentHTML);
-    setContent(contentHTML);
-  }, [editor,  insertTableSize])
+    setNoteData((prev) => ({ ...prev, content: contentHTML}));
+  }, [editor,  insertTableSize]);
 
 
   async function handleTextSave(){
-    const content = editor?.getHTML();
+    const noteContent = editor?.getHTML();
 
-    if(content) localStorage.setItem("note", content);
-    localStorage.setItem("post", JSON.stringify(postData))
+    if(noteContent) {
+      if(session?.user && noteData.noteId) {
+        await editNote({...noteData, title: noteTitle, noteId: noteData.noteId})
+      }else if(session?.user) {
+        await saveNote({...noteData, title: noteTitle, user: session?.user});
+      }
+      localStorage.setItem("note", noteContent)
+    };
+    localStorage.setItem("post", JSON.stringify(postData));
   }
 
   function handleAddPosting(e: MouseEvent<HTMLButtonElement>){
@@ -106,7 +121,7 @@ export default function Note({defaultContent, defaultPostData}:{defaultContent?:
   return(
     <VStack>
       <HStack>
-        <Input variant="flushed" type="text" placeholder="title" onChange={(e) => setTitle(e.target.value)} value={title} />
+        <Input variant="flushed" type="text" placeholder="title" onChange={(e) => setNoteTitle(e.target.value)} value={noteTitle} />
         <Button colorScheme="teal" variant="solid" onClick={handleTextSave} >saved</Button>
         <label style={{ cursor: "pointer" }} htmlFor="color-picker">
           Color

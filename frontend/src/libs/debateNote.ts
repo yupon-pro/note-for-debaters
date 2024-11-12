@@ -27,6 +27,28 @@ export async function getNote(id: string){
   }
 }
 
+export async function getLatestNote(){
+  const uri = `${process.env.SERVER_URI}/note/latest`;
+  const accessToken = (await auth())?.accessToken;
+  if(!accessToken) throw new Error("Failed to GEt Access Token");
+
+  const init = {
+    uri,
+    accessToken,
+    tag: ["note"]
+  }
+
+  try{
+    const note = await new FetchWithAuth(init).getMethod();
+    if(!isNote(note)) throw new Error("Note Type Error");
+
+    return note;
+
+  }catch(error){
+    throw error;
+  }
+}
+
 export async function getNotes(){
   const uri = `${process.env.SERVER_URI}/note`;
   const accessToken = (await auth())?.accessToken;
