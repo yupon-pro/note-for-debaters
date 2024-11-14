@@ -1,103 +1,68 @@
 "use client";
 
-import { HStack, Input, VStack, } from "@chakra-ui/react";
+import { HStack, Icon, Input, VStack, } from "@chakra-ui/react";
 import { MouseEvent,  useEffect,  useState } from "react";
 import TableEditor from "./Table";
 import { Button } from "@/components/ui/button";
-import { useEditor } from "@tiptap/react";
-import { CustomTableCell } from "./CustomTableCell";
-import Document from '@tiptap/extension-document'
-import Gapcursor from '@tiptap/extension-gapcursor'
-import Paragraph from '@tiptap/extension-paragraph'
-import Table from '@tiptap/extension-table'
-import TableHeader from '@tiptap/extension-table-header'
-import TableRow from '@tiptap/extension-table-row'
-import Text from '@tiptap/extension-text'
-import { Color } from '@tiptap/extension-color'
-import TextStyle from '@tiptap/extension-text-style'
 import InsertTable from "./InsertTable";
 import { NoteData } from "../types/note";
-import { editNote, saveNote } from "../utils/clientNote";
+import { editNote, saveNote } from "../libs/clientNote";
 import { useSession } from "next-auth/react";
 import { ClientMemoData } from "@/types/memoType";
-import { editMemos, saveMemos } from "../utils/clientMemo";
+import { editMemos, saveMemos } from "../libs/clientMemo";
 import Memo from "./Memo";
+import { useScriptEditor, useTableEditor } from "../utils/useEditor";
+import ScriptEditor from "./Script";
+import { defaultColors, defaultNoteScript, defaultNoteTable } from "../consts/defautNoteConsts";
+import { ApplyCommandToAllEditors } from "../utils/editorCommandClass";
+import { FaBold, FaItalic } from "react-icons/fa";
+import CommandIcons from "./CommandIcons";
 
-
-const defaultColors = [
-  {label: "red",code:"#ff0000"},
-  {label: "blue",code:"#00ff00"},
-  {label: "black",code:"#0000ff"},
-];
-
-const defaultNoteContent =  `
-  <table>
-    <tbody>
-      <tr>
-        <td>OG</td>
-        <td>OO</td>
-      </tr>
-      <tr>
-        <td>CG</td>
-        <td>CO</td>
-      </tr>
-    </tbody>
-  </table>
-  `;
-
-export default function Note({ defaultNote, defaultMemoData} :{ defaultNote?: NoteData, defaultMemoData?: ClientMemoData[] }){
-  const [noteTitle, setNoteTitle] = useState(defaultNote?.title || "");
-  const [noteData, setNoteData] = useState<NoteData | null>(defaultNote || null);
-  const [memoData, setMemoData] = useState<ClientMemoData[] | null>(defaultMemoData || null);
+export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteData?: NoteData, defaultMemoData?: ClientMemoData[] }){
+  const [noteTitle, setNoteTitle] = useState(defaultNoteData?.title);
+  const [memoData, setMemoData] = useState<ClientMemoData[]>(defaultMemoData || []);
+  const noteId = defaultNoteData?.noteId;
   const { data: session } = useSession();
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      Gapcursor,
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableHeader,
-      CustomTableCell,
-      Color,
-      TextStyle,
-    ],
-    content: noteData?.content,
-  });
+  const tableEditor = useTableEditor(defaultNoteData?.table);
+  const scriptEditor = useScriptEditor(defaultNoteData?.script);
+  const unifiedCommands = new ApplyCommandToAllEditors([ tableEditor, scriptEditor ]);
 
   useEffect(() => {
     // read the data and write if necessary.
     // we have the premise that the local saved data and server updated data are the same.
     const localSavedNoteTitle = localStorage.getItem("title");
-    const localSavedNoteContent = localStorage.getItem("note");
+    const localSavedNoteScript = localStorage.getItem("script");
+    const localSavedNoteTable = localStorage.getItem("note");
     const localSavedMemoData = localStorage.getItem("memo");
 
-    const isDefaultTitle = !!defaultNote?.title;
-    const isDefaultNoteData = !!defaultNote;
+    const isDefaultNoteTitle = !!defaultNoteData?.title;
+    const isDefaultNoteScript = !!defaultNoteData?.script;
+    const isDefaultNoteTable = !!defaultNoteData?.table;
     const isDefaultMemoData = !!defaultMemoData;
 
-    if(!isDefaultTitle && localSavedNoteTitle){
+    if(!isDefaultNoteTitle && localSavedNoteTitle){
       setNoteTitle(localSavedNoteTitle);
+    }
+
+    if(!isDefaultNoteScript && localSavedNoteScript) {
+      scriptEditor?.commands.setContent(localSavedNoteScript);
+
+    }else if(!isDefaultNoteScript) {
+      scriptEditor?.commands.setContent(defaultNoteScript);
 
     }
 
-    if(!isDefaultNoteData && localSavedNoteContent) {
+    if(!isDefaultNoteTable && localSavedNoteTable) {
       // If there is a default note data, the content is set to editor content.
       // this sentence aims to set content if there is no default data but local data exists.
       // I think this sentence works when the user doesn't sing up but use this project.
-      setNoteData({ content: localSavedNoteContent });
-      editor?.commands.setContent(localSavedNoteContent);
+      tableEditor?.commands.setContent(localSavedNoteTable);
 
-    }else if(!isDefaultNoteData) {
+    }else if(!isDefaultNoteTable) {
       // If there is no local data and server data, the default data is set.
       // I think this sentence works when the user uses this for the first time or didn't save the previous note.
-      setNoteData({ content: defaultNoteContent });
-      editor?.commands.setContent(defaultNoteContent);
+      tableEditor?.commands.setContent(defaultNoteTable);
 
     }
 
@@ -106,28 +71,29 @@ export default function Note({ defaultNote, defaultMemoData} :{ defaultNote?: No
 
     }
 
-  }, [editor, defaultNote, defaultMemoData]);
+  }, [tableEditor, scriptEditor, defaultNoteData, defaultMemoData]);
   
 
   async function handleTextSave(){
     // save the note and memo.
-    const noteContent = editor?.getHTML();
-    if(!noteContent || !noteData) return false;
+    const noteTable = tableEditor?.getHTML();
+    const noteScript = scriptEditor?.getHTML() || "";
+    if(!noteTable || !noteTitle) return false;
 
     // While the data will be saved in local storage in every saving action,
     // server saving will take place only when the user has singed up.
     if(session?.user){
       const user = session.user;
       
-      if(noteData.noteId) {
-        await editNote({...noteData, title: noteTitle, noteId: noteData.noteId});
+      if(noteId) {
+        await editNote({ noteId, title: noteTitle, table: noteTable, script: noteScript });
 
       }else{
-        await saveNote({...noteData, title: noteTitle, user});
+        await saveNote({ user, title: noteTitle, table: noteTable, script: noteScript });
 
       }
 
-      if(memoData){
+      if(memoData.length){
         const saveData = memoData.map((memo) => ({
           ...memo, 
           user,
@@ -138,7 +104,7 @@ export default function Note({ defaultNote, defaultMemoData} :{ defaultNote?: No
         }));
 
         const registers = saveData.filter((memo) => !memo.serverMemoId);
-        const updates = saveData.filter((memo) => !memo.serverMemoId);
+        const updates = saveData.filter((memo) => !!memo.serverMemoId);
 
         await saveMemos(registers);
         await editMemos(updates);
@@ -146,9 +112,9 @@ export default function Note({ defaultNote, defaultMemoData} :{ defaultNote?: No
       }
     }
     
-
     localStorage.setItem("title", noteTitle);
-    localStorage.setItem("note", noteContent);
+    localStorage.setItem("table", noteTable);
+    localStorage.setItem("script", noteScript);
     localStorage.setItem("memo", JSON.stringify(memoData));
   }
 
@@ -156,7 +122,7 @@ export default function Note({ defaultNote, defaultMemoData} :{ defaultNote?: No
     const id = crypto.randomUUID();
     const defaultData = {
       clientMemoId: id,
-      noteId: noteData?.noteId,
+      noteId,
       content: "memo",
       width: 200,
       height: 100,
@@ -174,20 +140,27 @@ export default function Note({ defaultNote, defaultMemoData} :{ defaultNote?: No
         <label style={{ cursor: "pointer" }} htmlFor="color-picker">
           Color
         </label>
-        <Input width={50} height={30} id="color-picker" type="color" onChange={(e) => editor?.chain().focus().setColor(e.target.value).run()} />
+        <Input width={25} height={30} id="color-picker" type="color" onChange={(e) => unifiedCommands.setColor(e.target.value)} />
         <datalist id="color-picker">
           {defaultColors.map((color) => (
             <option key={color.code} value={color.code} />
           ))}
         </datalist>
+        <Icon fontSize="30px" cursor="pointer" onClick={() => unifiedCommands.toggleBold()}>
+          <FaBold />
+        </Icon>
+        <Icon fontSize="30px" cursor="pointer" onClick={() => unifiedCommands.toggleItalic()}>
+          <FaItalic />
+        </Icon>
+        <CommandIcons unifiedCommands={unifiedCommands} />
         <Button colorScheme="teal" variant="solid" onClick={handleAddMemo} >memo</Button>
-        <InsertTable editor={editor} setNoteData={setNoteData} />
+        <InsertTable editor={tableEditor} />
       </HStack>
-      {memoData && Object.entries(memoData).map(([id, value]) => (
-        <Memo key={id} memoId={id} memoData={value} setMemoData={setMemoData} />
+      {memoData.length && memoData.map((memo) => (
+        <Memo key={memo.clientMemoId} memoData={memo} setMemoData={setMemoData} />
       ))}
-      <TableEditor editor={editor} />
+      <ScriptEditor editor={scriptEditor} />
+      <TableEditor editor={tableEditor} />
     </VStack>
   );
-
 }

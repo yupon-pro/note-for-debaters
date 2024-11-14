@@ -38,7 +38,6 @@ export default function TableEditor({ editor }:{ editor: Editor | null }) {
     <>
       <EditorContent 
         editor={editor} 
-        className="tiptap" 
         onContextMenu={handleShow}
       />
       { displayMenu.display === "block" && (<Contextmenu top={displayMenu.top} left={displayMenu.left} editor={editor} />)}

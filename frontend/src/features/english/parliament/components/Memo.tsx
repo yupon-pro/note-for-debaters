@@ -4,27 +4,25 @@ import { Dispatch, SetStateAction } from "react";
 import { Rnd } from "react-rnd";
 import { RxCross1 } from "react-icons/rx";
 import { Box, Textarea } from "@chakra-ui/react";
-import { removeMemo } from "../utils/clientMemo";
+import { removeMemo } from "../libs/clientMemo";
 import { ClientMemoData } from "@/types/memoType";
 
 export default function Memo({
-  memoId,
   memoData, 
   setMemoData
 }: {
-  memoId: string;
   memoData: ClientMemoData; 
-  setMemoData: Dispatch<SetStateAction<ClientMemoData[] | null>>;
+  setMemoData: Dispatch<SetStateAction<ClientMemoData[]>>;
 }){
 
   async function handleDeleteMemo(){
-    setMemoData((prev) => !prev ? prev : prev.filter((memo) => memo.clientMemoId !== memoId) )
-    await removeMemo(memoId);
+    setMemoData((prev) => prev.filter((memo) => memo.clientMemoId !== memoData.clientMemoId));
+    if(memoData.serverMemoId) await removeMemo(memoData.serverMemoId);
   }
 
   return (
     <Rnd
-      key={memoId}
+      key={memoData.clientMemoId}
       style={{ 
         border: "1px solid black", 
         padding: 5,
@@ -38,22 +36,22 @@ export default function Memo({
         height: memoData.height,
       }} 
       onResizeStop={(e, direction, ref) => {
-        setMemoData((prev) => prev?.map((memo) => memo.clientMemoId !== memoId ? memo : {
+        setMemoData((prev) => prev.map((memo) => memo.clientMemoId !== memoData.clientMemoId ? memo : {
           ...memo, 
           width: Number(ref.style.width), 
           height: Number(ref.style.height)
-        }) || null);
+        }));
       }}
       onDragStop={(e, data,) => {
-        setMemoData((prev) => prev?.map((memo) => memo.clientMemoId !== memoId ? memo : {
+        setMemoData((prev) => prev.map((memo) => memo.clientMemoId !== memoData.clientMemoId ? memo : {
           ...memo, 
           x: data.x, 
           y: data.y
-        }) || null);
+        }));
       }}
     >
       <Textarea
-        id={memoId} 
+        id={memoData.clientMemoId} 
         rows={10} 
         autoFocus={true}
         variant="flushed" 
@@ -61,15 +59,17 @@ export default function Memo({
         height="full" 
         value={memoData.content} 
         onChange={(e) => 
-          setMemoData((prev) => prev?.map((memo) => memo.clientMemoId !== memoId ? memo : {...memo, content:e.target.value}) || null)
+          setMemoData((prev) => prev.map((memo) => 
+            memo.clientMemoId !== memoData.clientMemoId ? memo : {...memo, content:e.target.value}))
         } 
         onInput={(e) => {
           const target = e.target as HTMLTextAreaElement;
-          setMemoData((prev) => prev?.map((memo) => memo.clientMemoId !== memoId ? memo : {...memo, height: target.scrollHeight}) || null);
+          setMemoData((prev) => prev.map((memo) => 
+            memo.clientMemoId !== memoData.clientMemoId ? memo : {...memo, height: target.scrollHeight}));
         }}  
       />
       <Box 
-        id={memoId}
+        id={memoData.clientMemoId}
         position="absolute"
         top={1} 
         right={0}

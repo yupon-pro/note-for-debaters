@@ -3,20 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { PopoverArrow, PopoverBody, PopoverContent } from "@/components/ui/popover";
 import { PopoverRoot, PopoverTrigger, Table } from "@chakra-ui/react"
-import { Dispatch, SetStateAction, useState } from "react"
+import { useState } from "react"
 import { renderToString } from "react-dom/server";
-import { NoteData } from "../types/note";
 import { Editor } from '@tiptap/react'
 
 const matrix = new Array(5).fill(0).map(() => [0, 0, 0, 0, 0])
 
-export default function InsertTable({ 
-  editor, 
-  setNoteData 
-}: {
-  editor: Editor | null, 
-  setNoteData: Dispatch<SetStateAction<NoteData | null>> 
-}){
+export default function InsertTable({ editor }: { editor: Editor | null}){
   const [highlight, setHighlight] = useState({ row: -1, column: -1 });
 
   function handleHighlight(row:number, column:number){
@@ -45,7 +38,6 @@ export default function InsertTable({
     const contentHTML = renderToString(content)
     editor?.commands.clearContent();
     editor?.commands.setContent(contentHTML);
-    setNoteData((prev) => ({ ...prev, content: contentHTML}));
   }
 
   return (
