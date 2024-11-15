@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { z } from "zod";
 import { authConfig } from "./auth.config";
-import { getUser } from "@/libs/auth";
+import { authenticate } from "@/libs/auth";
+import { isLoginData } from "@/utils/authTypeGuard";
 
 export const {
 	auth,
@@ -14,15 +14,12 @@ export const {
 	providers: [
 		Credentials({
 			async authorize(credentials) {
-				const parsedCredentials = z
-					.object({ email: z.string().email(), password: z.string().min(6) })
-					.safeParse(credentials);
-
-				if (parsedCredentials.success) {
-					const { email, password } = parsedCredentials.data;
+				// this value presume that it is not form data but normal object.
+				if (isLoginData(credentials)) {
+					const { email, password } = credentials;
           
 					try{
-						const user = await getUser({ email, password });
+						const user = await authenticate({ email, password });
 						
 						return user;
 					}catch(error){

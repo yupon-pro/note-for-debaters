@@ -7,8 +7,8 @@ export default async function Header(){
   const session = await auth();
   
   return(
-    <header className="bg-teal-500 w-[90%] mx-auto">
-      <div className="flex justify-between items-center p-6">
+    <header className="bg-teal-500 rounded w-full mx-auto">
+      <div className="flex justify-between items-center p-[10px]">
         <div>
           Note For Debaters
         </div>
@@ -23,11 +23,26 @@ export default async function Header(){
             </button>
           </div>
         ) : (
-          <div>
-            <Link href="/auth/login" className="cursor-pointer rounded bg-blue-200 hover:bg-blue-400 flex justify-between items-center p-6">
+          <div 
+            className="
+              relative 
+              cursor-pointer 
+              border-solid 
+              border-2 
+              border-sky-500 rounded 
+              bg-blue-200 
+              hover:bg-blue-400 
+              flex 
+              justify-between 
+              items-center 
+              p-3
+              w-50
+              "
+            >
+            <Link href="/auth/login" >
               <p>Login</p>
-              <FaArrowRight size={60} className="absolute top-0 right-0 hover:right-4" />
             </Link>
+            <FaArrowRight size={15} color="skyblue" />
           </div>
         )}
       </div>
