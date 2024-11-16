@@ -4,7 +4,7 @@ import { IoKeyOutline } from "react-icons/io5";
 import AuthForm from "../../common/AuthForm";
 import FormSubmitButton from "../../common/FormSubmitButton";
 import { useFormState } from "react-dom";
-import { verifyMailCodeAction } from "../../utils/formActions";
+import { verifyMailCodeFormAction } from "../../libs/formActions";
 import { Text } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";
@@ -19,7 +19,7 @@ const initialValue = {
 } as const;
 
 export default function MailAuthCode(){
-  const [state, dispatch] = useFormState(verifyMailCodeAction, initialValue);
+  const [state, dispatch] = useFormState(verifyMailCodeFormAction, initialValue);
   const setMailCodeStatusValue = useSetAtom(mailCodeStatusAtom);
   const setStepError = useSetAtom(stepErrorAtom);
 

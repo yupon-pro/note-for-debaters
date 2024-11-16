@@ -19,10 +19,25 @@ export type SignUpState = {
   message?: string | null;
 };
 
-export type MailCode = {
+export type MailCodeState = {
   status: FieldStatus;
   errors?: {
     code?: string[];
   };
   message?: string | null;
 };
+
+export type MailInputState = {
+  errors?: {
+    email?: string[];
+  };
+  message?: string | null;
+}
+
+export type ResetPwdState = {
+  errors?: {
+    password?: string[];
+    confirmPassword?: string[];
+  };
+  message?: string | null;
+}

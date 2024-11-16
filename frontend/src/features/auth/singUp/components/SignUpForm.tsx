@@ -2,7 +2,7 @@
 
 import {  VStack, Text } from "@chakra-ui/react"
 import { useFormState } from "react-dom"
-import { signUpFormAction } from "../../utils/formActions"
+import { signUpFormAction } from "../../libs/formActions"
 import { LuUser } from "react-icons/lu"
 import { CiMail } from "react-icons/ci"
 import AuthForm from "../../common/AuthForm"

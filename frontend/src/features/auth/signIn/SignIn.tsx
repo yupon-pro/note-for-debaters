@@ -2,7 +2,7 @@
 
 import { VStack } from "@chakra-ui/react"
 import { useFormState } from "react-dom"
-import { signInAction, } from "../utils/formActions"
+import { signInFormAction, } from "../libs/formActions"
 import { CiMail } from "react-icons/ci"
 import AuthForm from "../common/AuthForm"
 import { RiLockPasswordLine } from "react-icons/ri"
@@ -17,7 +17,7 @@ const initialValues = {
 };
 
 export default function SignIn() {
-  const [state, dispatch] = useFormState(signInAction, initialValues);
+  const [state, dispatch] = useFormState(signInFormAction, initialValues);
 
   return (
     <form action={dispatch}>
