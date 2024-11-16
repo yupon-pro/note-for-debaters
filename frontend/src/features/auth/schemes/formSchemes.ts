@@ -2,11 +2,11 @@ import { z } from "zod";
 
 export const SignUpScheme = z
   .object({
-    username: z.string(),
+    name: z.string().min(3, {message: "Please input your name at least 3 letters."}),
     email: z.string().email(),
     password: z
       .string()
-      .min(5, { message: "Please input your password at least 5 letters" })
+      .min(5, { message: "Please input your password at least 5 letters." })
       .regex(
       /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$ %^&*-]).{5,}$/i,
       { message: "Invalid password characters." }

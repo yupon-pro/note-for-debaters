@@ -1,4 +1,4 @@
-type FormStatus = "Success" | "Failure" | "Initial";
+type FieldStatus = "Success" | "Failure" | "Initial";
 
 export type SignInState = {
   errors?: {
@@ -9,12 +9,20 @@ export type SignInState = {
 };
 
 export type SignUpState = {
-  status: FormStatus;
+  status: FieldStatus;
   errors?: {
-    username?: string[];
+    name?: string[];
     email?: string[];
     password?: string[];
     confirmPassword?: string[];
+  };
+  message?: string | null;
+};
+
+export type MailCode = {
+  status: FieldStatus;
+  errors?: {
+    code?: string[];
   };
   message?: string | null;
 };

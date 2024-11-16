@@ -1,6 +1,6 @@
 "use client"
 
-import { Stack } from "@chakra-ui/react"
+import { VStack } from "@chakra-ui/react"
 import { useFormState } from "react-dom"
 import { signInAction, } from "../utils/formActions"
 import { CiMail } from "react-icons/ci"
@@ -21,7 +21,7 @@ export default function SignIn() {
 
   return (
     <form action={dispatch}>
-      <Stack gap="4" align="flex-start" maxW="sm">
+      <VStack gap="4" align="flex-start" maxW="50%" my="0" mx="auto">
         <AuthForm
           name="email"
           type="email"
@@ -37,7 +37,7 @@ export default function SignIn() {
           errors={state.errors?.password}
         />
         <FormSubmitButton />
-      </Stack>
+      </VStack>
     </form>
   )
 }

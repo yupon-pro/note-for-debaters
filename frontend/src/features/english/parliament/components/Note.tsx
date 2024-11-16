@@ -156,7 +156,7 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
         <Button colorScheme="teal" variant="solid" onClick={handleAddMemo} >memo</Button>
         <InsertTable editor={tableEditor} />
       </HStack>
-      {memoData.length && memoData.map((memo) => (
+      {!!memoData.length && memoData.map((memo) => (
         <Memo key={memo.clientMemoId} memoData={memo} setMemoData={setMemoData} />
       ))}
       <ScriptEditor editor={scriptEditor} />

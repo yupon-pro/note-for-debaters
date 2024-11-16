@@ -1,4 +1,3 @@
-
 import "@/features/english/parliament/styles/scriptStyles.scss";
 import { Editor, EditorContent } from "@tiptap/react";
 

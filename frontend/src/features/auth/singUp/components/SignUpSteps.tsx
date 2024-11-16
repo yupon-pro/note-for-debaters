@@ -1,71 +1,128 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { signUpFormStatusAtom, stepError } from "@/jotai/SignUpStepAtom";
-import { HStack, VStack } from "@chakra-ui/react";
-import { useAtom, useAtomValue } from "jotai";
+import { consentStatusAtom, mailCodeStatusAtom, signUpFormStatusAtom, stepErrorAtom } from "@/jotai/SignUpStepAtom";
+import { Box, HStack, VStack } from "@chakra-ui/react";
+import { useAtom, } from "jotai";
 import { useEffect, useState } from "react";
-import { Stepper, } from "react-form-stepper";
+import { Step, Stepper } from "react-form-stepper";
+import SignUpForm from "./SignUpForm";
+import MailAuthCode from "./MailAuthCode";
+import SignUpComplete from "./SignUpComplete";
+import { useRouter } from "next/navigation";
+import ConsentForm from "./ConsentForm";
 
 const steps = [{label: "Form"}, {label: "Mail Code"}, {label: "complete"}];
 
 export default function SignUpSteps() {
+  const router = useRouter()
   const [activeStep, setActiveStep] = useState(0);
-  const signUpFromStatusValue = useAtomValue(signUpFormStatusAtom);
-  const [stepErrorValue, setStepError] = useAtom(stepError);
+  const [consentStatus, setConcentStatus] = useAtom(consentStatusAtom)
+  const [signUpFromStatus, setSignUpFormStatus] = useAtom(signUpFormStatusAtom);
+  const [mailCodeStatus, setMailCodeStatus] = useAtom(mailCodeStatusAtom);
+  const [stepError, setStepError] = useAtom(stepErrorAtom);
 
   useEffect(() => {
-    if(signUpFromStatusValue === "Success"){
-      setActiveStep(1);
+    if(signUpFromStatus === "Success"){
+      setActiveStep(2);
+    }
+    if(mailCodeStatus=== "Success"){
+      setActiveStep(3);
     }
 
-  }, [signUpFromStatusValue]);
+  }, [signUpFromStatus, mailCodeStatus]);
+
 
   function handleNext() {
-    if(stepErrorValue || signUpFromStatusValue !== "Success"){
-      return false;
-    }
+    if(stepError) return false;
+    if(activeStep === 0 && !consentStatus) return false;
+    if(activeStep === 1 && signUpFromStatus !== "Success") return false;
+    if(activeStep === 2 &&  mailCodeStatus !== "Success") return false;
+
     setActiveStep((prev) => prev + 1);
   };
 
   function handleBack() {
-    if(stepErrorValue){
-      setStepError(false);
-    }
+    if(stepError) setStepError(false);
+    if(activeStep === 1) setConcentStatus(false);
+    if(activeStep === 2) setSignUpFormStatus("Initial");
+    if(activeStep === 3) setMailCodeStatus("Initial");
+    
     setActiveStep((prev) => prev - 1);
   };
 
-
   return (
     <VStack width="full">
-      <Stepper 
-        activeStep={activeStep} 
-        steps={steps}
-        color={stepErrorValue ? "red" : "blue"}
-      />
+      <Stepper activeStep={activeStep}>
+        <Step 
+          label="form" 
+          style={{ 
+            backgroundColor: `${ 
+              signUpFromStatus === "Failure"  
+                ? "red"
+                : activeStep === 1
+                ? "cyan"
+                : "lightcyan" 
+            }` 
+          }}  
+        />
+        <Step 
+          label="code" 
+          style={{ 
+            backgroundColor: `${ 
+              mailCodeStatus === "Failure"  
+                ? "red"
+                : activeStep === 2
+                ? "cyan"
+                : "lightcyan" 
+            }` 
+          }}  
+        />
+        <Step 
+          label="complete" 
+          style={{ 
+            backgroundColor: `${ 
+              activeStep === 3
+                ? "cyan"
+                : "lightcyan" 
+            }` 
+          }}  
+        />
+      </Stepper>
       <StepContent activeStep={activeStep} />
-      <HStack w="full" justifyContent="space-between" alignItems="center" >
+      <HStack w="full" justifyContent="space-around" >
         <Button
           disabled={activeStep === 0}
           onClick={handleBack}
         >
           Back
         </Button>
-        <Button onClick={handleNext}>
-          {activeStep === steps.length - 1 ? "Finish" : "Next"}
-        </Button>
+        { activeStep === steps.length ? (
+          <Button onClick={() => router.push("/mypage")} >
+            My Page
+          </Button>
+        ) : (
+          <Button onClick={handleNext} disabled={stepError} >
+            {activeStep === steps.length - 1 ? "Finish" : "Next"}
+          </Button>
+        )}
       </HStack>
     </VStack>
   );
 }
 
 function StepContent({ activeStep }: { activeStep: number }){
-  switch(activeStep){
-    case 0:
-      return <></>;
-    case 1:
-      return <></>;
-    case 2:
-      return <></>;
-    default:
-      return null;
-  }
+  return(
+    <Box minH="50vh">
+      {
+        activeStep === 0
+          ? <ConsentForm />
+          : activeStep === 1 
+          ? <SignUpForm /> 
+          : activeStep === 2 
+          ? <MailAuthCode />
+          : <SignUpComplete />
+      }
+    </Box>
+  );
 }

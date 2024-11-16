@@ -40,7 +40,9 @@ export default function TableEditor({ editor }:{ editor: Editor | null }) {
         editor={editor} 
         onContextMenu={handleShow}
       />
-      { displayMenu.display === "block" && (<Contextmenu top={displayMenu.top} left={displayMenu.left} editor={editor} />)}
+      { displayMenu.display === "block" && (
+        <Contextmenu top={displayMenu.top} left={displayMenu.left} editor={editor} />
+      )}
 
     </>
   )
