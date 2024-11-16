@@ -43,7 +43,7 @@ export default function InsertTable({ editor }: { editor: Editor | null}){
   return (
     <PopoverRoot>
       <PopoverTrigger asChild >
-        <Button colorScheme="teal" size="sm" variant="solid" >Insert Table</Button>
+        <Button colorScheme="teal" size="sm" variant="solid" >Insert</Button>
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />

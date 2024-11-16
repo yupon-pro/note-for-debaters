@@ -1,9 +1,10 @@
 "use client";
 
-import "@/features/english/parliament/styles/tableStyles.scss";
+import "@/features/english/parliament/styles/tableStyle.scss";
 import { Editor, EditorContent, } from '@tiptap/react'
 import { MouseEvent, useEffect, useState } from 'react'
 import Contextmenu from "./ContextMenu";
+import SelectMenu from "./SelectMenu";
 
 export default function TableEditor({ editor }:{ editor: Editor | null }) {
   const [displayMenu, setDisplayMenu] = useState({display:"none", top: "0", left: "0"});
@@ -18,8 +19,8 @@ export default function TableEditor({ editor }:{ editor: Editor | null }) {
     setDisplayMenu((prev) => ({
       ...prev,
       display: "block",
-      top: e.pageY + "px",
-      left: e.pageX + "px",
+      top: e.clientY + "px",
+      left: e.clientX + "px",
     }));
   }
 
@@ -37,13 +38,15 @@ export default function TableEditor({ editor }:{ editor: Editor | null }) {
   return (
     <>
       <EditorContent 
+        className="note-table"
         editor={editor} 
         onContextMenu={handleShow}
+        onFocus={() => editor?.chain().focus().run()}
       />
-      { displayMenu.display === "block" && (
+      <SelectMenu editor={editor} />
+      {displayMenu.display === "block" && (
         <Contextmenu top={displayMenu.top} left={displayMenu.left} editor={editor} />
       )}
-
     </>
   )
 }

@@ -27,7 +27,7 @@ export default function SignUpForm() {
   const [state, dispatch] = useFormState(signUpFormAction, initialValues);
   const setSignUpFormStatus = useSetAtom(signUpFormStatusAtom);
   const setStepError = useSetAtom(stepErrorAtom);
-  console.log(state.errors);
+
   useEffect(() => {
     const status = state.status;
     if(status === "Initial") return;

@@ -1,6 +1,7 @@
 "use client";
 
-import { HStack, Icon, Input, VStack, } from "@chakra-ui/react";
+import "@/features/english/parliament/styles/basicStyle.scss";
+import { HStack,  Input, VStack, } from "@chakra-ui/react";
 import { MouseEvent,  useEffect,  useState } from "react";
 import TableEditor from "./Table";
 import { Button } from "@/components/ui/button";
@@ -11,12 +12,13 @@ import { useSession } from "next-auth/react";
 import { ClientMemoData } from "@/types/memoType";
 import { editMemos, saveMemos } from "../libs/clientMemo";
 import Memo from "./Memo";
-import { useScriptEditor, useTableEditor } from "../utils/useEditor";
+import { useScriptEditor, useTableEditor } from "../hooks/useEditor";
 import ScriptEditor from "./Script";
-import { defaultColors, defaultNoteScript, defaultNoteTable } from "../consts/defautNoteConsts";
-import { ApplyCommandToAllEditors } from "../utils/editorCommandClass";
-import { FaBold, FaItalic } from "react-icons/fa";
-import CommandIcons from "./CommandIcons";
+import { defaultNoteScript, defaultNoteTable } from "../consts/defautNoteConsts";
+import SeparateCommandIcons from "./SeparateCommandIcons";
+import TransitionDetection from "@/features/common/components/TransitionDetection";
+import CooperativeCommandIcons from "./CooperativeCommandIcons";
+import { Toaster, toaster } from "@/components/ui/toaster";
 
 export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteData?: NoteData, defaultMemoData?: ClientMemoData[] }){
   const [noteTitle, setNoteTitle] = useState(defaultNoteData?.title);
@@ -26,14 +28,14 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
 
   const tableEditor = useTableEditor(defaultNoteData?.table);
   const scriptEditor = useScriptEditor(defaultNoteData?.script);
-  const unifiedCommands = new ApplyCommandToAllEditors([ tableEditor, scriptEditor ]);
 
   useEffect(() => {
+    // [Notion]
     // read the data and write if necessary.
     // we have the premise that the local saved data and server updated data are the same.
     const localSavedNoteTitle = localStorage.getItem("title");
     const localSavedNoteScript = localStorage.getItem("script");
-    const localSavedNoteTable = localStorage.getItem("note");
+    const localSavedNoteTable = localStorage.getItem("table");
     const localSavedMemoData = localStorage.getItem("memo");
 
     const isDefaultNoteTitle = !!defaultNoteData?.title;
@@ -74,23 +76,21 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
   }, [tableEditor, scriptEditor, defaultNoteData, defaultMemoData]);
   
 
-  async function handleTextSave(){
+  async function handleTextSave(bakeToast?: boolean){
     // save the note and memo.
     const noteTable = tableEditor?.getHTML();
     const noteScript = scriptEditor?.getHTML() || "";
-    if(!noteTable || !noteTitle) return false;
-
+    if(!noteTable || !noteTitle) return;
+    // [Notion]
     // While the data will be saved in local storage in every saving action,
     // server saving will take place only when the user has singed up.
     if(session?.user){
       const user = session.user;
-      
+      let noteAction;
       if(noteId) {
-        await editNote({ noteId, title: noteTitle, table: noteTable, script: noteScript });
-
+        noteAction = async () => await editNote({ noteId, title: noteTitle, table: noteTable, script: noteScript });
       }else{
-        await saveNote({ user, title: noteTitle, table: noteTable, script: noteScript });
-
+        noteAction = async () => await saveNote({ user, title: noteTitle, table: noteTable, script: noteScript });
       }
 
       if(memoData.length){
@@ -106,16 +106,30 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
         const registers = saveData.filter((memo) => !memo.serverMemoId);
         const updates = saveData.filter((memo) => !!memo.serverMemoId);
 
-        await saveMemos(registers);
-        await editMemos(updates);
-
+        bakeToast && toaster.promise(Promise.all([noteAction(), saveMemos(registers), editMemos(updates)]), {
+          success: {
+            title: "Successfully saved!",
+            description: "Looks great",
+          },
+          error: {
+            title: "Saved failed",
+            description: "Something wrong with the save",
+          },
+          loading: { title: "saving...", description: "Please wait" },
+        })
       }
+    }else{
+      bakeToast && toaster.create({
+        title: "Your date is saved only locally.",
+        type: "success",
+      });
     }
     
     localStorage.setItem("title", noteTitle);
     localStorage.setItem("table", noteTable);
     localStorage.setItem("script", noteScript);
     localStorage.setItem("memo", JSON.stringify(memoData));
+
   }
 
   function handleAddMemo(e: MouseEvent<HTMLButtonElement>){
@@ -123,44 +137,48 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
     const defaultData = {
       clientMemoId: id,
       noteId,
-      content: "memo",
-      width: 200,
-      height: 100,
-      x:e.pageX,
-      y:e.pageY
+      content: "memo\n\n\n",
+      width: 300,
+      height: 200,
+      x:e.pageX - 150,
+      y:e.pageY - 100,
     }
     setMemoData((prev) => !prev ? ([defaultData]) : ([ ...prev, defaultData ]))
   }
 
   return(
-    <VStack>
-      <HStack>
-        <Input variant="flushed" type="text" placeholder="title" onChange={(e) => setNoteTitle(e.target.value)} value={noteTitle} />
-        <Button colorScheme="teal" variant="solid" onClick={handleTextSave} >saved</Button>
-        <label style={{ cursor: "pointer" }} htmlFor="color-picker">
-          Color
-        </label>
-        <Input width={25} height={30} id="color-picker" type="color" onChange={(e) => unifiedCommands.setColor(e.target.value)} />
-        <datalist id="color-picker">
-          {defaultColors.map((color) => (
-            <option key={color.code} value={color.code} />
-          ))}
-        </datalist>
-        <Icon fontSize="30px" cursor="pointer" onClick={() => unifiedCommands.toggleBold()}>
-          <FaBold />
-        </Icon>
-        <Icon fontSize="30px" cursor="pointer" onClick={() => unifiedCommands.toggleItalic()}>
-          <FaItalic />
-        </Icon>
-        <CommandIcons unifiedCommands={unifiedCommands} />
-        <Button colorScheme="teal" variant="solid" onClick={handleAddMemo} >memo</Button>
-        <InsertTable editor={tableEditor} />
-      </HStack>
-      {!!memoData.length && memoData.map((memo) => (
-        <Memo key={memo.clientMemoId} memoData={memo} setMemoData={setMemoData} />
-      ))}
-      <ScriptEditor editor={scriptEditor} />
-      <TableEditor editor={tableEditor} />
-    </VStack>
+    <>
+      <VStack>
+        <HStack px={1} w="full" justifyContent="space-between">
+          <Input
+            display="block" 
+            width={{ md: "25%", lg: "30%", xl: "30%" }}
+            variant="flushed" 
+            type="text" 
+            placeholder="title" 
+            value={noteTitle}
+            onChange={(e) => setNoteTitle(e.target.value)}  
+          />
+          <HStack 
+            width={{ md: "40%", lg: "50%", xl: "60%" }}
+            justifyContent="flex-end" 
+            gap={5} 
+          >
+            <Button colorScheme="teal" variant="solid" onClick={() => handleTextSave(true)} >saved</Button>
+            <CooperativeCommandIcons editors={[ scriptEditor, tableEditor ]} />
+            <SeparateCommandIcons editors={[ scriptEditor, tableEditor ]} />
+            <Button colorScheme="teal" variant="solid" onClick={handleAddMemo} >memo</Button>
+            <InsertTable editor={tableEditor} />
+          </HStack>
+        </HStack>
+        {!!memoData.length && memoData.map((memo) => (
+          <Memo key={memo.clientMemoId} memoData={memo} setMemoData={setMemoData} />
+        ))}
+        <ScriptEditor editor={scriptEditor} />
+        <TableEditor editor={tableEditor} />
+      </VStack>
+      <Toaster  />
+      <TransitionDetection callable={handleTextSave} />
+    </>
   );
 }

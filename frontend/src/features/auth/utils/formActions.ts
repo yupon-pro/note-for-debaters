@@ -96,6 +96,11 @@ export async function verifyMailCodeAction(prevState: MailCode, formData: FormDa
   const { code: mailCode } = safeField.data;
 
   try{
+    // [Notion]
+    // This function contains four methods to communicate with api server.
+    // 1. verify the email auth code (gain the user info)
+    // 2. delete the tentative user.
+    // 3. register the user info to the stable user table in back end.
     const Verification = await authenticateMailCode(mailCode);
 
     if(Verification.data && Verification.status === "Success"){

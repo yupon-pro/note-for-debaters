@@ -14,7 +14,9 @@ export default function Memo({
   memoData: ClientMemoData; 
   setMemoData: Dispatch<SetStateAction<ClientMemoData[]>>;
 }){
-
+  // [Notion]
+  // Memo's parental component is Note. 
+  // If you want to user "bounds='parent'" to make memo move freely, pay to the hierarchy
   async function handleDeleteMemo(){
     setMemoData((prev) => prev.filter((memo) => memo.clientMemoId !== memoData.clientMemoId));
     if(memoData.serverMemoId) await removeMemo(memoData.serverMemoId);
@@ -29,12 +31,16 @@ export default function Memo({
         zIndex: 5,
         isolation: "isolate",
       }}
-      default={{ 
-        x: memoData.x - 20,
+      position={{
+        x: memoData.x,
         y: memoData.y,
-        width: memoData.width, 
-        height: memoData.height,
-      }} 
+      }}
+      size={{
+        width: memoData.width,
+        height: memoData.height
+      }}
+      maxHeight="450px"
+      bounds="parent"
       onResizeStop={(e, direction, ref) => {
         setMemoData((prev) => prev.map((memo) => memo.clientMemoId !== memoData.clientMemoId ? memo : {
           ...memo, 

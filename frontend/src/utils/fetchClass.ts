@@ -7,6 +7,8 @@ type Body = {
 }
 
 export class FetchWithAuth{
+  // [Notion]
+  // This class will be used mainly when access token is necessary to communicate with api server.
   private uri: string;
   private accessToken: string;
   private body?: string;

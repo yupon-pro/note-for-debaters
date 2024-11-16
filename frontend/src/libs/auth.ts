@@ -4,6 +4,7 @@ import { AuthUser, SignInData, SingUpData } from "@/types/authType";
 import { isSignInData, isSignUpData, isUser } from "@/utils/authTypeGuard";
 
 export async function authenticate(signInData: SignInData):Promise<AuthUser>{
+  // [Notion]
   // This function is special.
   // Other functions in this script will be called nearer client script (form actions).
   // However, this function will be called in auth.js initializing function

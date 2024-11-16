@@ -1,4 +1,4 @@
-import { Editor, useEditor } from "@tiptap/react";
+import { Editor, mergeAttributes, Node, useEditor } from "@tiptap/react";
 import { CustomTableCell } from "@/features/english/parliament/components/CustomTableCell";
 import Document from '@tiptap/extension-document'
 import Gapcursor from '@tiptap/extension-gapcursor'
@@ -12,6 +12,24 @@ import TextStyle from '@tiptap/extension-text-style'
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align"
 import Highlight from "@tiptap/extension-highlight"
+import Italic from "@tiptap/extension-italic";
+import Underline from "@tiptap/extension-underline";
+
+const commonExtension = [
+  StarterKit,
+  Document, 
+  Paragraph,
+  Text,
+  Gapcursor,
+  Color,
+  Italic,
+  TextStyle,
+  TextAlign.configure({
+    types: ['heading', 'paragraph'],
+  }),
+  Highlight,
+  Underline,
+];
 
 export function useTableEditor(content?: string):Editor | null {
   return useEditor({
@@ -23,17 +41,7 @@ export function useTableEditor(content?: string):Editor | null {
       TableRow,
       TableHeader,
       CustomTableCell,
-      StarterKit,
-      Document, 
-      Paragraph,
-      Text,
-      Gapcursor,
-      Color,
-      TextStyle,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Highlight,
+      ...commonExtension
     ],
     content: content,
   });
@@ -41,21 +49,7 @@ export function useTableEditor(content?: string):Editor | null {
 
 export function useScriptEditor(content?: string):Editor | null{
   return useEditor({
-    extensions: [
-      StarterKit,
-      Document, 
-      Paragraph,
-      Text,
-      Gapcursor,
-      Color,
-      TextStyle,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Highlight,
-    ],
+    extensions: commonExtension,
     content: content,
   })
-
-
 }

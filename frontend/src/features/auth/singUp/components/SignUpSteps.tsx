@@ -23,6 +23,8 @@ export default function SignUpSteps() {
   const [stepError, setStepError] = useAtom(stepErrorAtom);
 
   useEffect(() => {
+    // [Notion]
+    // If a specific process is successful, the system automatically more the user to the next step.
     if(signUpFromStatus === "Success"){
       setActiveStep(2);
     }
@@ -32,8 +34,8 @@ export default function SignUpSteps() {
 
   }, [signUpFromStatus, mailCodeStatus]);
 
-
   function handleNext() {
+    // A user can't go forward without certain procedure.
     if(stepError) return false;
     if(activeStep === 0 && !consentStatus) return false;
     if(activeStep === 1 && signUpFromStatus !== "Success") return false;
@@ -43,6 +45,7 @@ export default function SignUpSteps() {
   };
 
   function handleBack() {
+    // If a user go backward, it will be allowed to take process to sign up.
     if(stepError) setStepError(false);
     if(activeStep === 1) setConcentStatus(false);
     if(activeStep === 2) setSignUpFormStatus("Initial");
