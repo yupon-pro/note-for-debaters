@@ -11,7 +11,7 @@ RUN apk update && apk add git
 
 RUN go install github.com/air-verse/air@latest
 RUN go install github.com/swaggo/swag/cmd/swag@latest
-RUN swag init -g main.go -dir /app
+RUN swag init -g /app/main.go
 
 CMD ["air", "-c", ".air.toml"]
 

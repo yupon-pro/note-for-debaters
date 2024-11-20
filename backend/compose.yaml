@@ -13,3 +13,21 @@ services:
       - type: bind
         source: ./app
         target: /app
+
+  db:
+    container_name: "note-for-debater-db"
+    build:
+      context: .
+      dockerfile: ./db/Dockerfile
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    tty: true
+    volumes:
+      - postgres:/var/lib/posgresql/data
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres:
