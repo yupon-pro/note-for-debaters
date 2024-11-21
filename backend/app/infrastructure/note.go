@@ -40,13 +40,7 @@ func (rep *NoteRepositoryInfrastructure) Create(note *domain.Note) error {
 }
 
 func (rep *NoteRepositoryInfrastructure) Update(note *domain.Note) error {
-	updateNote := domain.UpdateNote{
-		Title:  note.Title,
-		Table:  note.Table,
-		Script: note.Script,
-	}
-
-	result := rep.db.Client.Model(&domain.Note{}).Where("note_id = ?", note.NoteId).Updates(updateNote)
+	result := rep.db.Client.Model(&domain.Note{}).Where("note_id = ?", note.NoteId).Updates(note)
 	if result.Error != nil {
 		return fmt.Errorf("failed to update note: %w", result.Error)
 	}
