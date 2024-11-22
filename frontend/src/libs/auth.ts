@@ -1,7 +1,9 @@
 "use server";
 
+import { auth } from "@/config/auth";
 import { AuthUser, SignInData, SingUpData } from "@/types/authType";
 import { isSignInData, isSignUpData, isUser } from "@/utils/authTypeGuard";
+import { FetchWithAuth } from "@/utils/fetchClass";
 
 // sign in.
 export async function authenticate(signInData: SignInData):Promise<AuthUser>{
@@ -9,9 +11,7 @@ export async function authenticate(signInData: SignInData):Promise<AuthUser>{
   // This function is special.
   // Other functions in this script will be called nearer client script (form actions).
   // However, this function will be called in auth.js initializing function
-  const uri = `${process.env.SERVER_URI}/auth/login`;
-
-  if(!uri) throw new Error("URI Error");
+  const uri = `${process.env.SERVER_URI}/user/signin`;
 
   try{
     const res = await fetch(uri, {
@@ -19,7 +19,8 @@ export async function authenticate(signInData: SignInData):Promise<AuthUser>{
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(signInData)
+      body: JSON.stringify(signInData),
+      cache: "no-store",
     });
 
     if(res.status !== 200){
@@ -36,10 +37,8 @@ export async function authenticate(signInData: SignInData):Promise<AuthUser>{
 }
 
 // sign up actions
-export async function postTentativeUser(signUpData: SingUpData, mailCode: string){
-  const uri = `${process.env.SERVER_URI}/auth/tentative_user`;
-
-  if(!uri) throw new Error("URI Error");
+export async function registerTentativeUser(signUpData: SingUpData, mailCode: string){
+  const uri = `${process.env.SERVER_URI}/tentative_user`;
 
   const tentativeUser = {
     ...signUpData,
@@ -72,12 +71,10 @@ type Verification = {
 }
 
 export async function authenticateMailCode(mailCode: string): Promise<Verification> {
-  const uri = `${process.env.SERVER_URI}/auth/tentative_user/${mailCode}`;
-
-  if(!uri) throw new Error("URI Error");
+  const uri = `${process.env.SERVER_URI}/tentative_user/${mailCode}`;
 
   try{
-    const res = await fetch(uri, { method: "GET" });
+    const res = await fetch(uri);
 
     const status = res.statusText || "Success";
     if(status !== "Success"){
@@ -94,10 +91,8 @@ export async function authenticateMailCode(mailCode: string): Promise<Verificati
   }
 }
 
-export async function deleteTentativeUser(mailCode: string) {
-  const uri = `${process.env.SERVER_URI}/auth/tentative_user/${mailCode}`;
-
-  if(!uri) throw new Error("URI Error");
+export async function removeTentativeUser(mailCode: string) {
+  const uri = `${process.env.SERVER_URI}/tentative_user/${mailCode}`;
 
   try{
     const res = await fetch(uri, { method: "DELETE" });
@@ -113,10 +108,8 @@ export async function deleteTentativeUser(mailCode: string) {
   }
 }
 
-export async function postUser(signUpData: SingUpData): Promise<SignInData> {
-  const uri = `${process.env.SERVER_URI}/auth/user`;
-
-  if(!uri) throw new Error("URI Error");
+export async function registerUser(signUpData: SingUpData): Promise<SignInData> {
+  const uri = `${process.env.SERVER_URI}/user/signup`;
 
   try{
     const res = await fetch(uri, {
@@ -142,18 +135,10 @@ export async function postUser(signUpData: SingUpData): Promise<SignInData> {
 
 // reset pwd actions.
 export async function authenticateUser(email: string){
-  const uri = `${process.env.SERVER_URI}/auth/user/exists`;
-
-  if(!uri) throw new Error("URI Error");
+  const uri = `${process.env.SERVER_URI}/user/?email=${email}`;
 
   try{
-    const res = await fetch(uri, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email }),
-    });
+    const res = await fetch(uri);
 
     if(res.status !== 200) {
       throw new Error("Fail to authenticate user");
@@ -168,10 +153,8 @@ export async function authenticateUser(email: string){
   }
 }
 
-export async function postResetToken(token: string, userId: string, email: string) {
-  const uri = `${process.env.SERVER_URI}/auth/reset_pwd/`;
-
-  if(!uri) throw new Error("URI Error");
+export async function registerResetToken(token: string, userId: string, email: string) {
+  const uri = `${process.env.SERVER_URI}/reset_pwd/`;
 
   try{
     const res = await fetch(uri, {
@@ -194,18 +177,10 @@ export async function postResetToken(token: string, userId: string, email: strin
 }
 
 export async function authenticateToken(token: string){
-  const uri = `${process.env.SERVER_URI}/auth/reset_pwd`;
-
-  if(!uri) throw new Error("URI Error");
+  const uri = `${process.env.SERVER_URI}/reset_pwd/${token}`;
 
   try{
-    const res = await fetch(uri, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ token }),
-    });
+    const res = await fetch(uri);
 
     if(res.status !== 200) {
       throw new Error("Fail to authenticate token.");
@@ -222,13 +197,11 @@ export async function authenticateToken(token: string){
 }
 
 export async function resetPasswordDirectly(userId: string, password: string): Promise<SignInData> {
-  const uri = `${process.env.SERVER_URI}/auth/user`;
-
-  if(!uri) throw new Error("URI Error");
+  const uri = `${process.env.SERVER_URI}/user`;
 
   try{
     const res = await fetch(uri, {
-      method: "POST",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json"
       },
@@ -236,12 +209,54 @@ export async function resetPasswordDirectly(userId: string, password: string): P
     });
 
     if(res.status !== 200) {
-      throw new Error("Fail to authenticate token.");
+      throw new Error("Fail to reset password.");
     }
 
     const signInData = await res.json();
-    if(!isSignInData(signInData)) throw new Error("Type of sign in data id is wrong.");
+    if(!isSignInData(signInData)) throw new Error("Type of sign in data is wrong.");
     return signInData;
+
+  }catch(error){
+    throw error;
+  }
+}
+
+// Actions needed to be authorized
+export async function patchUser(userId: string, name: string, password: string): Promise<AuthUser> {
+  const uri = `${process.env.SERVER_URI}/auth/user/${userId}`;
+
+  const accessToken = (await auth())?.accessToken;
+  if(!accessToken) throw new Error("Failed to Get Access Token");
+
+  const init = {
+    uri,
+    accessToken,
+    body: { name, password }
+  }
+
+  try{
+    const newUser = await new FetchWithAuth(init).updateMethod();
+    if(!isUser(newUser)) throw new Error("Type of user is wrong.")
+    return newUser
+
+  }catch(error){
+    throw error;
+  }
+}
+
+export async function deleteUser(userId: string) {
+  const uri = `${process.env.SERVER_URI}/auth/user/${userId}`;
+
+  const accessToken = (await auth())?.accessToken;
+  if(!accessToken) throw new Error("Failed to Get Access Token");
+
+  const init = {
+    uri,
+    accessToken
+  }
+
+  try{
+    await new FetchWithAuth(init).deleteMethod();
 
   }catch(error){
     throw error;

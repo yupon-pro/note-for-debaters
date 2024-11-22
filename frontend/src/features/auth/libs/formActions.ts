@@ -4,7 +4,7 @@ import { signIn } from "@/config/auth";
 import { MailCodeState, MailInputState, ResetPwdState, SignInState, SignUpState } from "../types/formTypes";
 import { AuthError } from "next-auth";
 import { EmailScheme, ResetPwdScheme, SignInScheme, SignUpScheme } from "../schemes/formSchemes";
-import {  authenticateMailCode, authenticateUser, deleteTentativeUser, postResetToken, postTentativeUser, postUser,  resetPasswordDirectly, } from "@/libs/auth";
+import {  authenticateMailCode, authenticateUser, removeTentativeUser, registerResetToken, registerTentativeUser, registerUser,  resetPasswordDirectly, } from "@/libs/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { sendGmail } from "@/utils/mailer";
@@ -67,7 +67,7 @@ export async function signUpFormAction(prevState: SignUpState, formData: FormDat
   const text = `${name}さん、こんにちは！認証コードは${mailCode}です！お早めに登録を完了させてください。`
 
   try{
-    await postTentativeUser(signUpData, mailCode);
+    await registerTentativeUser(signUpData, mailCode);
     await sendGmail(email, text);
     
   }catch(error){
@@ -107,8 +107,8 @@ export async function verifyMailCodeFormAction(prevState: MailCodeState, formDat
     const Verification = await authenticateMailCode(mailCode);
 
     if(Verification.data && Verification.status === "Success"){
-      await deleteTentativeUser(mailCode);
-      await postUser(Verification.data);
+      await removeTentativeUser(mailCode);
+      await registerUser(Verification.data);
       await signIn("credentials", { 
         email: Verification.data.email, 
         password: Verification.data.password 
@@ -167,7 +167,7 @@ export async function verifyEmailFormAction(prevState: MailInputState, formData:
   try{
     const userId = await authenticateUser(email);
     await sendGmail(email, text);
-    await postResetToken(token, userId, email);
+    await registerResetToken(token, userId, email);
     
   }catch(error){
     return { message: `Verify Email Error: ${error instanceof Error ? error.message : "Something wrong"}` };
