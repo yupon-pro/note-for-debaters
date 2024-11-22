@@ -9,10 +9,17 @@ import (
 	echoswagger "github.com/swaggo/echo-swagger"
 	"github.com/yupon-pro/note-for-debater/config"
 	"github.com/yupon-pro/note-for-debater/infrastructure"
+	"github.com/yupon-pro/note-for-debater/interfaces"
+	"github.com/yupon-pro/note-for-debater/usecase"
 )
 
 
 func main() {
+	// [TODO] Implement JWT and authentication.
+
+	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// defer cancel()
+
 	mydb := new(infrastructure.MyDB)
 	if err := mydb.Connect(); err != nil{
 		log.Fatal(err)
@@ -24,6 +31,13 @@ func main() {
 	}
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	noteRepository := infrastructure.NewNoteRepositoryInfrastructure(mydb)
+	noteUsecase := usecase.NewNoteUsecase(noteRepository)
+	noteController := interfaces.NewNoteController(noteUsecase)
+
+	controllers := interfaces.NewControllers(noteController)
+	controllers.Mount(e.Group("/note"))
 
 	e.GET("/", func(c echo.Context)error{return c.String(http.StatusOK, "hello")})
 

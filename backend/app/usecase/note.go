@@ -10,6 +10,7 @@ import (
 type NoteUsecase interface{
 	ReadNote(noteId int) (*domain.Note, error)
 	ReadAllNotes(userId int) ([]domain.Note, error)
+	ReadLatestNote(userId int) (*domain.Note, error)
 	CreateNote(input *CreateNoteInput) error
 	UpdateNote(input *UpdateNoteInput) error
 	DeleteNote(noteId int) error	
@@ -51,6 +52,15 @@ func (n *noteUsecase) ReadAllNotes(userId int) ([]domain.Note, error){
 		return nil, err
 	}
 	return notes, nil
+}
+
+func (n *noteUsecase) ReadLatestNote(userId int) (*domain.Note, error){
+	note, err := n.noteRepository.ReadLatest(userId)
+	if err != nil{
+		return nil, err
+	}
+	return note, nil
+
 }
 
 func (n *noteUsecase) CreateNote(input *CreateNoteInput) error {

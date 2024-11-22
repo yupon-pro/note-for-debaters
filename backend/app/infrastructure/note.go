@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/yupon-pro/note-for-debater/domain"
@@ -9,11 +8,10 @@ import (
 
 type NoteRepositoryInfrastructure struct {
 	db  *MyDB
-	ctx context.Context
 }
 
-func NewNoteRepositoryInfrastructure(db *MyDB, ctx context.Context) domain.NoteRepository {
-	return &NoteRepositoryInfrastructure{db, ctx}
+func NewNoteRepositoryInfrastructure(db *MyDB) domain.NoteRepository {
+	return &NoteRepositoryInfrastructure{db}
 }
 
 func (rep *NoteRepositoryInfrastructure) Read(noteId int) (*domain.Note, error) {
@@ -31,6 +29,15 @@ func (rep *NoteRepositoryInfrastructure) ReadAll(userId int) ([]domain.Note, err
 	}
 	return notes, nil
 }
+
+func (rep *NoteRepositoryInfrastructure) ReadLatest(userId int) (*domain.Note, error) {
+	var note *domain.Note
+	if err := rep.db.Client.Where("user_id = ?", userId).Preload("User").Last(&note).Error; err != nil {
+		return nil, fmt.Errorf("failed to read all note: %w", err)
+	}
+	return note, nil
+}
+
 
 func (rep *NoteRepositoryInfrastructure) Create(note *domain.Note) error {
 	if err := rep.db.Client.Create(note).Error; err != nil {

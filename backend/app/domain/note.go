@@ -35,6 +35,7 @@ func (n Note) Validate() error {
 type NoteRepository interface{
 	Read(noteId int) (*Note, error)
 	ReadAll(userId int) ([]Note, error)
+	ReadLatest(userId int)(*Note, error)
 	Create(note *Note) error
 	Update(note *Note) error
 	Delete(noteId int) error
