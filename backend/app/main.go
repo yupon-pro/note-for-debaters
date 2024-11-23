@@ -36,8 +36,12 @@ func main() {
 	noteUsecase := usecase.NewNoteUsecase(noteRepository)
 	noteController := interfaces.NewNoteController(noteUsecase)
 
-	controllers := interfaces.NewControllers(noteController)
-	controllers.Mount(e.Group("/note"))
+	userRepository := infrastructure.NewUserRepositoryInfrastructure(mydb)
+	userUsecase := usecase.NewUserUsecase(userRepository)
+	userController := interfaces.NewUserController(userUsecase)
+
+	controllers := interfaces.NewControllers(noteController, userController)
+	controllers.Mount(e)
 
 	e.GET("/", func(c echo.Context)error{return c.String(http.StatusOK, "hello")})
 

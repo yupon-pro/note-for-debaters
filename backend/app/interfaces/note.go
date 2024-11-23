@@ -18,13 +18,13 @@ func NewNoteController(noteUsecase usecase.NoteUsecase) *NoteController {
 	}
 }
 
-func (c *NoteController) Mount(group *echo.Group) {
-	group.GET("/:id", c.Show)
-	group.GET("/", c.ShowAll)
-	group.GET("/latest", c.ShowLatest)
-	group.POST("/", c.Create)
-	group.PATCH("/:id", c.Update)
-	group.DELETE("/:id", c.Delete)
+func (c *NoteController) Mount(group *echo.Group, jwtMiddleware echo.MiddlewareFunc) {
+	group.GET("/:id", c.Show, jwtMiddleware)
+	group.GET("/", c.ShowAll, jwtMiddleware)
+	group.GET("/latest", c.ShowLatest, jwtMiddleware)
+	group.POST("/", c.Create, jwtMiddleware)
+	group.PATCH("/:id", c.Update, jwtMiddleware)
+	group.DELETE("/:id", c.Delete, jwtMiddleware)
 }
 
 func (c *NoteController) Show(e echo.Context) error {
@@ -56,7 +56,11 @@ func (c *NoteController) ShowAll(e echo.Context) error {
 }
 
 func (c *NoteController) ShowLatest(e echo.Context) error {
-	note, err := c.noteUsecase.ReadLatestNote(1)
+	uToken, err := UserInfoViaToken(e)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err)
+	}
+	note, err := c.noteUsecase.ReadLatestNote(uToken.UserId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
@@ -87,7 +91,7 @@ func (c *NoteController) Create(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	return e.String(http.StatusOK, "status ok")
+	return e.String(http.StatusCreated, "status ok")
 }
 
 func (c *NoteController) Update(e echo.Context) error {
@@ -130,5 +134,5 @@ func (c *NoteController) Delete(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	return e.String(http.StatusOK, "status ok")
+	return e.String(http.StatusNoContent, "status ok")
 }
