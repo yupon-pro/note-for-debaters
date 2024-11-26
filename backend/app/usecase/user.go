@@ -19,7 +19,7 @@ type CreateUserInput struct{
 }
 
 type UpdateUserInput struct{
-	UserId int `json:"userId" form:"userId"`
+	UserId int `json:"user_id" form:"user_id"`
 	CreateUserInput
 }
 

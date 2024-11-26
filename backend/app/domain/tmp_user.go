@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-type User struct{
-	UserId int `gorm:"primary_key; AUTO_INCREMENT; column:user_id"`
+type TmpUser struct{
+	MailCode string `gorm:"primary_key; column:mail_code"`
 	Name string `gorm:"not null; column:name"`
 	Email string `gorm:"uniqueIndex; not null; column:email"`
 	Password string `gorm:"not null; column:password"`
@@ -14,18 +14,14 @@ type User struct{
 	UpdatedAt time.Time `gorm:"auto_update_time; column:updated_at"`
 }
 
-type APIUser struct{
-	UserId int `gorm:"column:user_id"`
+type APITmpUser struct{
+	MailCode string `gorm:"column:mail_code"`
 	Name string `gorm:"column:name"`
 	Email string `gorm:"column:email"`
-}
-
-type AuthUser struct{
-	APIUser
 	Password string `gorm:"column:password"`
 }
 
-func (n User) Validate() error {
+func (n TmpUser) Validate() error {
 	if n.Name == "" || n.Email == "" || n.Password == "" {
 		return fmt.Errorf("必要なデータを入力してください")
 	}
@@ -33,10 +29,8 @@ func (n User) Validate() error {
 	return nil
 }
 
-type UserRepository interface{
-	Read(email string) (*APIUser, error)
-	ReadAuth(email string) (*AuthUser, error)
-	Create(user *User) (*APIUser, error)
-	Update(user *User) (*APIUser, error)
-	Delete(userId int) error
+type TmpUserRepository interface{
+	Read(mailCode string) (*APITmpUser, error)
+	Save(tmpUser *TmpUser) (*APITmpUser, error)
+	Delete(mailCode string) error
 }

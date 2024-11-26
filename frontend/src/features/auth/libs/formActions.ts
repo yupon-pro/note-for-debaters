@@ -104,34 +104,21 @@ export async function verifyMailCodeFormAction(prevState: MailCodeState, formDat
     // 1. verify the email auth code (gain the user info)
     // 2. delete the tentative user.
     // 3. register the user info to the stable user table in back end.
-    const Verification = await authenticateMailCode(mailCode);
+    const signUpData = await authenticateMailCode(mailCode);
 
-    if(Verification.data && Verification.status === "Success"){
-      await removeTentativeUser(mailCode);
-      await registerUser(Verification.data);
-      await signIn("credentials", { 
-        email: Verification.data.email, 
-        password: Verification.data.password 
-      });
+    await removeTentativeUser(mailCode);
+    await registerUser(signUpData);
+    await signIn("credentials", { 
+      email: signUpData.email, 
+      password: signUpData.password 
+    });
 
-      const result = {
-        status: "Success",
-      } as const;
+    const result = {
+      status: "Success",
+    } as const;
 
-      return result;
+    return result;
 
-    }else{
-      const errors = {
-        status: "Failure",
-        message:
-          Verification.status === "Invalid"
-            ? "Your code is invalid"
-            : Verification.status === "Timeout"
-            ? "Your session has expired. Please start over again."
-            : "Something went wrong. Please start over again."
-      } as const;
-      return errors;
-    }
 
   }catch(error){
     const errors = {
@@ -165,9 +152,9 @@ export async function verifyEmailFormAction(prevState: MailInputState, formData:
     `
   
   try{
-    const userId = await authenticateUser(email);
+    const user = await authenticateUser(email);
     await sendGmail(email, text);
-    await registerResetToken(token, userId, email);
+    await registerResetToken(token, user.id, email);
     
   }catch(error){
     return { message: `Verify Email Error: ${error instanceof Error ? error.message : "Something wrong"}` };

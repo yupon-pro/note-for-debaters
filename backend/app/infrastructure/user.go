@@ -37,7 +37,7 @@ func (rep *UserRepositoryInfrastructure) ReadAuth(email string) (*domain.AuthUse
 func (rep *UserRepositoryInfrastructure) Create(user *domain.User) (*domain.APIUser, error) {
 	var apiUser *domain.APIUser
 	res := []clause.Column{
-		{Name: "userId"},
+		{Name: "user_id"},
 		{Name: "email"},
 		{Name: "name"},
 	}
@@ -51,7 +51,7 @@ func (rep *UserRepositoryInfrastructure) Create(user *domain.User) (*domain.APIU
 func (rep *UserRepositoryInfrastructure) Update(user *domain.User) (*domain.APIUser, error) {
 	var apiUser *domain.APIUser
 	res := []clause.Column{
-		{Name: "userId"},
+		{Name: "user_id"},
 		{Name: "email"},
 		{Name: "name"},
 	}

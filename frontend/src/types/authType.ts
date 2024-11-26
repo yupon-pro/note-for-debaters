@@ -12,3 +12,9 @@ export type AuthUser = {
   name: string;
   email: string;
 };
+
+export type ResetPwdInfo = {
+  token: string;
+  id: string;
+  email: string;
+}

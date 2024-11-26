@@ -5,18 +5,16 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	// "github.com/labstack/echo/v4/middleware"
 	echoswagger "github.com/swaggo/echo-swagger"
 	"github.com/yupon-pro/note-for-debater/config"
+	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/infrastructure"
 	"github.com/yupon-pro/note-for-debater/interfaces"
 	"github.com/yupon-pro/note-for-debater/usecase"
 )
 
-
 func main() {
-	// [TODO] Implement JWT and authentication.
-
 	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	// defer cancel()
 
@@ -29,8 +27,13 @@ func main() {
 	if config.IsDevelopment() {
 		e.GET("/swagger/*", echoswagger.WrapHandler)
 	}
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
+	// e.Use(middleware.Logger())
+	// e.Use(middleware.Recover())
+
+	mydb.Client.AutoMigrate(&domain.User{})
+	mydb.Client.AutoMigrate(&domain.Note{})
+	mydb.Client.AutoMigrate(&domain.TmpUser{})
+	mydb.Client.AutoMigrate(&domain.ResetPwd{})
 
 	noteRepository := infrastructure.NewNoteRepositoryInfrastructure(mydb)
 	noteUsecase := usecase.NewNoteUsecase(noteRepository)
@@ -40,11 +43,19 @@ func main() {
 	userUsecase := usecase.NewUserUsecase(userRepository)
 	userController := interfaces.NewUserController(userUsecase)
 
-	controllers := interfaces.NewControllers(noteController, userController)
+	tmpUserRepository := infrastructure.NewTmpUserRepositoryInfrastructure(mydb)
+	tmpUserUsecase := usecase.NewTmpUserUsecase(tmpUserRepository)
+	tmpUserController := interfaces.NewTmpUserController(tmpUserUsecase)
+
+	resetPwdRepository := infrastructure.NewResetPwdRepositoryInfrastructure(mydb)
+	resetPwdUsecase := usecase.NewResetPwdUsecase(resetPwdRepository)
+	resetPwdController := interfaces.NewResetPwdController(resetPwdUsecase)
+
+	controllers := interfaces.NewControllers(noteController, userController, tmpUserController, resetPwdController)
 	controllers.Mount(e)
 
 	e.GET("/", func(c echo.Context)error{return c.String(http.StatusOK, "hello")})
 
-	e.Logger.Fatal(e.Start(":8082"))
+	e.Logger.Fatal(e.Start(":8080"))
 
 }

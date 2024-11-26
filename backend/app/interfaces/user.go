@@ -13,9 +13,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type APIUserResponse struct{
+	id int
+	name string
+	email string
+}
+
 type jwtCustomClaims struct {
-	Email string `json:"email"`
-	UserId int   `json:"userId"`
+	Email string 
+	UserId int   
 	jwt.RegisteredClaims
 }
 
@@ -40,8 +46,8 @@ func (c *UserController) Mount(group *echo.Group, jwtMiddleware echo.MiddlewareF
 
 func (c *UserController) Signin(e echo.Context) error {
 	req := struct{
-		Email string `json:"email"`
-		Password string `json:"password"`
+		Email string `json:"email" form:"email"`
+		Password string `json:"password" form:"password"`
 	}{}
 
 	if err := e.Bind(req); err != nil{
@@ -81,7 +87,7 @@ func (c *UserController) Signin(e echo.Context) error {
 
 	return e.JSON(http.StatusOK, echo.Map{
 		"accessToken": t,
-		"user": echo.Map{
+		"user": map[string]string{
 			"id": strconv.Itoa(user.UserId),
 			"name": user.Name,
 			"email": user.Email,
@@ -107,7 +113,10 @@ func (c *UserController) SignUp(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 
-	return e.JSON(http.StatusCreated, res)
+	return e.JSON(http.StatusCreated, echo.Map{
+		"email": res.Email,
+		"password": req.Password,
+	})
 
 }
 
@@ -119,13 +128,17 @@ func (c *UserController) Show(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 	
-	return e.JSON(http.StatusOK, res.UserId)
+	return e.JSON(http.StatusOK, APIUserResponse{
+		id: res.UserId,
+		name: res.Name,
+		email: res.Email,	
+	})
 
 }
 
 func (c *UserController) Update(e echo.Context) error {
 	req := &struct{
-		UserId string `json:"userId"`
+		UserId string `json:"user_id"`
 		Password string `json:"password"`
 	}{}
 
@@ -145,7 +158,11 @@ func (c *UserController) Update(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 
-	return e.JSON(http.StatusOK, res)
+	return e.JSON(http.StatusOK, APIUserResponse{
+		id: res.UserId,
+		name: res.Name,
+		email: res.Email,	
+	})
 
 }
 
@@ -168,7 +185,11 @@ func (c *UserController) AuthUpdate(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 
-	return e.JSON(http.StatusOK, res)
+	return e.JSON(http.StatusOK, APIUserResponse{
+		id: res.UserId,
+		name: res.Name,
+		email: res.Email,	
+	})
 
 }
 

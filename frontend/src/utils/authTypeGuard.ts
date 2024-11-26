@@ -1,4 +1,4 @@
-import { AuthUser, SignInData, SingUpData } from "@/types/authType";
+import { AuthUser, ResetPwdInfo, SignInData, SingUpData } from "@/types/authType";
 import { isObj } from "./objTypeGuard";
 
 export function isLoginData(value: unknown):value is SignInData {
@@ -27,4 +27,12 @@ export function isSignUpData(value: unknown): value is SingUpData{
   if(!isObj(value)) return false;
   const user = value as Record<keyof SingUpData, unknown>;
   return isSignInData(user) && typeof user.name === "string"
+}
+
+export function isResetPwdInfo(value: unknown): value is ResetPwdInfo{
+  if(!isObj(value)) return false;
+  const info = value as Record<keyof ResetPwdInfo, unknown>;
+  return typeof info.token === "string" &&
+    typeof info.email === "string" &&
+    typeof info.id === "string";
 }

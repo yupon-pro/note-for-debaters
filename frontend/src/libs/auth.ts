@@ -2,7 +2,7 @@
 
 import { auth } from "@/config/auth";
 import { AuthUser, SignInData, SingUpData } from "@/types/authType";
-import { isSignInData, isSignUpData, isUser } from "@/utils/authTypeGuard";
+import { isResetPwdInfo, isSignInData, isSignUpData, isUser } from "@/utils/authTypeGuard";
 import { FetchWithAuth } from "@/utils/fetchClass";
 
 // sign in.
@@ -44,7 +44,7 @@ export async function registerTentativeUser(signUpData: SingUpData, mailCode: st
 
   const tentativeUser = {
     ...signUpData,
-    mailCode,
+    "mail_code": mailCode,
   };
 
   try{
@@ -60,36 +60,34 @@ export async function registerTentativeUser(signUpData: SingUpData, mailCode: st
       throw new Error("Fetch Error");
     }
 
-    const userTentativeInfo = await res.json()
-    return userTentativeInfo
+    const signUpData = await res.json();
+    if(!isSignUpData(signUpData)) throw new Error("SignUp Data Type Error");
+    return signUpData;
+
   }catch(error){
     throw error;
   }
 }
 
-type Verification = {
-  status: string;
-  data?: SingUpData;
-}
 
-export async function authenticateMailCode(mailCode: string): Promise<Verification> {
+export async function authenticateMailCode(mailCode: string): Promise<SingUpData> {
   const uri = `${process.env.SERVER_URI}/tentative_user/${mailCode}`;
 
   try{
     const res = await fetch(uri);
 
-    const status = res.statusText || "Success";
-    if(status !== "Success"){
-      return {status}
-    }else{
-      const signUpData = await res.json();
-      if(!isSignUpData(signUpData)) throw new Error("SignUp Data Type Error");
-      return {status, data: signUpData};
+    if(res.status !== 200) {
+      throw new Error("Failed to get tentative user data.")
     }
+    
+    const signUpData = await res.json();
+    if(!isSignUpData(signUpData)) throw new Error("SignUp Data Type Error");
+    return signUpData
+  
 
   }catch(error){
     console.log(error);
-    return { status: "Unknown" };
+    throw error
   }
 }
 
@@ -137,7 +135,7 @@ export async function registerUser(signUpData: SingUpData): Promise<SignInData> 
 
 // reset pwd actions.
 export async function authenticateUser(email: string){
-  const uri = `${process.env.SERVER_URI}/user/?email=${email}`;
+  const uri = `${process.env.SERVER_URI}/user/${email}`;
 
   try{
     const res = await fetch(uri);
@@ -146,9 +144,9 @@ export async function authenticateUser(email: string){
       throw new Error("Fail to authenticate user");
     }
     
-    const userId = await res.json();
-    if(typeof userId !== "string") throw new Error("Type of user id is wrong.");
-    return userId;
+    const user = await res.json();
+    if(!isUser(user)) throw new Error("Type of user is wrong.");
+    return user;
 
   }catch(error){
     throw error;
@@ -164,7 +162,7 @@ export async function registerResetToken(token: string, userId: string, email: s
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ token, userId, email }),
+      body: JSON.stringify({ token, email, "user_id": userId }),
     });
 
     if(res.status !== 201) {
@@ -188,9 +186,9 @@ export async function authenticateToken(token: string){
       throw new Error("Fail to authenticate token.");
     }
 
-    const userId = await res.json();
-    if(typeof userId !== "string") throw new Error("Type of user id is wrong.");
-    return userId;
+    const resetPwdInfo = await res.json();
+    if(!isResetPwdInfo(resetPwdInfo)) throw new Error("Type of user id is wrong.");
+    return resetPwdInfo.id;
 
   }catch(error){
     console.log(error);
@@ -207,7 +205,7 @@ export async function resetPasswordDirectly(userId: string, password: string): P
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ userId, password }),
+      body: JSON.stringify({ password, "user_id": userId }),
     });
 
     if(res.status !== 200) {
