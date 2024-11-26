@@ -38,6 +38,8 @@ export async function authenticate(signInData: SignInData):Promise<AuthUser>{
 
 // sign up actions
 export async function registerTentativeUser(signUpData: SingUpData, mailCode: string){
+  // This function assume that the password won't be encrypted in server api.
+  // The password is supposed to be encrypted when the sign up process successes.
   const uri = `${process.env.SERVER_URI}/tentative_user`;
 
   const tentativeUser = {
@@ -222,8 +224,8 @@ export async function resetPasswordDirectly(userId: string, password: string): P
 }
 
 // Actions needed to be authorized
-export async function patchUser(userId: string, name: string, password: string): Promise<AuthUser> {
-  const uri = `${process.env.SERVER_URI}/auth/user/${userId}`;
+export async function patchUser(name: string, password: string): Promise<AuthUser> {
+  const uri = `${process.env.SERVER_URI}/user/auth/`;
 
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to Get Access Token");
@@ -244,8 +246,8 @@ export async function patchUser(userId: string, name: string, password: string):
   }
 }
 
-export async function deleteUser(userId: string) {
-  const uri = `${process.env.SERVER_URI}/auth/user/${userId}`;
+export async function deleteUser() {
+  const uri = `${process.env.SERVER_URI}/user/auth/`;
 
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to Get Access Token");

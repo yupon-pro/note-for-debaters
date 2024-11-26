@@ -11,8 +11,8 @@ type NoteUsecase interface{
 	ReadNote(noteId int) (*domain.Note, error)
 	ReadAllNotes(userId int) ([]domain.Note, error)
 	ReadLatestNote(userId int) (*domain.Note, error)
-	CreateNote(input *CreateNoteInput) error
-	UpdateNote(input *UpdateNoteInput) error
+	CreateNote(input *CreateNoteInput) (*domain.Note, error)
+	UpdateNote(input *UpdateNoteInput) (*domain.Note, error)
 	DeleteNote(noteId int) error	
 }
 
@@ -63,7 +63,7 @@ func (n *noteUsecase) ReadLatestNote(userId int) (*domain.Note, error){
 
 }
 
-func (n *noteUsecase) CreateNote(input *CreateNoteInput) error {
+func (n *noteUsecase) CreateNote(input *CreateNoteInput) (*domain.Note, error) {
 	note := &domain.Note{
 		UserId: input.UserId,
 		Title: input.Title,
@@ -71,30 +71,32 @@ func (n *noteUsecase) CreateNote(input *CreateNoteInput) error {
 		Table: input.Table,
 	}
 	if err := note.Validate(); err != nil{
-		return err
+		return nil, err
 	}
-	if err := n.noteRepository.Create(note); err != nil{
-		return err
+	resNote, err := n.noteRepository.Create(note)
+	if err != nil{
+		return nil, err
 	}
-	return nil
+	return resNote, nil
 }
 
-func (n *noteUsecase) UpdateNote(input *UpdateNoteInput) error {
+func (n *noteUsecase) UpdateNote(input *UpdateNoteInput) (*domain.Note, error) {
 	note, err := n.noteRepository.Read(input.NoteId)
 	if err != nil{
-		return err
+		return nil, err
 	}
 
 	if err := updateNoteFields(note, input); err != nil{
-		return err
+		return nil, err
 	}
 	if err := note.Validate(); err != nil{
-		return err
+		return nil, err
 	}
-	if err := n.noteRepository.Update(note); err != nil{
-		return err
+	resNote, err := n.noteRepository.Update(note)
+	if  err != nil{
+		return nil, err
 	}
-	return nil
+	return resNote, nil
 }
 
 func (n *noteUsecase) DeleteNote(noteId int) error {

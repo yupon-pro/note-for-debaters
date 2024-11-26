@@ -56,11 +56,11 @@ func (c *NoteController) ShowAll(e echo.Context) error {
 }
 
 func (c *NoteController) ShowLatest(e echo.Context) error {
-	uToken, err := UserInfoViaToken(e)
+	uInfo, err := UserInfoViaToken(e)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
-	note, err := c.noteUsecase.ReadLatestNote(uToken.UserId)
+	note, err := c.noteUsecase.ReadLatestNote(uInfo.UserId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
@@ -79,7 +79,7 @@ func (c *NoteController) Create(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	err := c.noteUsecase.CreateNote(
+	res, err := c.noteUsecase.CreateNote(
 		&usecase.CreateNoteInput{
 			UserId: req.UserId,
 			Title: req.Title,
@@ -91,7 +91,7 @@ func (c *NoteController) Create(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	return e.String(http.StatusCreated, "status ok")
+	return e.JSON(http.StatusCreated, res)
 }
 
 func (c *NoteController) Update(e echo.Context) error {
@@ -106,7 +106,7 @@ func (c *NoteController) Update(e echo.Context) error {
 		return err
 	}
 
-	err := c.noteUsecase.UpdateNote(
+	res, err := c.noteUsecase.UpdateNote(
 		&usecase.UpdateNoteInput{
 			NoteId: req.NoteId,
 			CreateNoteInput: usecase.CreateNoteInput{
@@ -121,7 +121,7 @@ func (c *NoteController) Update(e echo.Context) error {
 		return err
 	}
 
-	return e.String(http.StatusOK, "status ok")
+	return e.JSON(http.StatusCreated, res)
 }
 
 func (c *NoteController) Delete(e echo.Context) error {

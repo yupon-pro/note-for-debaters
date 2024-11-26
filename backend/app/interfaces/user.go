@@ -31,19 +31,24 @@ func NewUserController(userUsecase usecase.UserUsecase) *UserController {
 
 func (c *UserController) Mount(group *echo.Group, jwtMiddleware echo.MiddlewareFunc) {
 	group.POST("/signin", c.Signin)
+	group.POST("/signup", c.SignUp)
+	group.GET("/:email", c.Show)
+	group.PATCH("", c.Update)
+	group.PATCH("/auth", c.AuthUpdate, jwtMiddleware)
+	group.DELETE("/auth", c.AuthDelete, jwtMiddleware)
 }
 
 func (c *UserController) Signin(e echo.Context) error {
 	req := struct{
-		Email string
-		Password string
+		Email string `json:"email"`
+		Password string `json:"password"`
 	}{}
 
 	if err := e.Bind(req); err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	user, err := c.userUsecase.ReadUser(req.Email)
+	user, err := c.userUsecase.ReadAuthUser(req.Email)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
@@ -77,16 +82,108 @@ func (c *UserController) Signin(e echo.Context) error {
 	return e.JSON(http.StatusOK, echo.Map{
 		"accessToken": t,
 		"user": echo.Map{
-			"userId": strconv.Itoa(user.UserId),
+			"id": strconv.Itoa(user.UserId),
 			"name": user.Name,
 			"email": user.Email,
-			"createdAt": user.CreatedAt.String(),
-			"updatedAt": user.UpdatedAt.String(),
 		},
 	})
+}
+
+func (c *UserController) SignUp(e echo.Context) error {
+	var req usecase.CreateUserInput
+
+	if err := e.Bind(&req); err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	encryptedPwd, err := encryptPwd(req.Password)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	req.Password = encryptedPwd
+
+	res, err := c.userUsecase.CreateUser(&req)
+	if err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)	
+	}
+
+	return e.JSON(http.StatusCreated, res)
 
 }
 
+// For reset process
+func (c *UserController) Show(e echo.Context) error {
+	email := e.Param("email")
+	res, err := c.userUsecase.ReadAPIUser(email)
+	if err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)	
+	}
+	
+	return e.JSON(http.StatusOK, res.UserId)
+
+}
+
+func (c *UserController) Update(e echo.Context) error {
+	req := &struct{
+		UserId string `json:"userId"`
+		Password string `json:"password"`
+	}{}
+
+	if err := e.Bind(req); err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)	
+	}
+	
+	userId, err := strconv.Atoi(req.UserId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	res, err := c.userUsecase.UpdateUser(&usecase.UpdateUserInput{
+		UserId: userId,
+		CreateUserInput: usecase.CreateUserInput{Password: req.Password},
+	})
+	if err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)	
+	}
+
+	return e.JSON(http.StatusOK, res)
+
+}
+
+// For authorized user's actions
+func (c *UserController) AuthUpdate(e echo.Context) error {
+	uInfo, err := UserInfoViaToken(e)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err)
+	}
+	var req usecase.UpdateUserInput
+
+	if err := e.Bind(&req); err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	req.UserId = uInfo.UserId
+	
+	res, err := c.userUsecase.UpdateUser(&req)
+	if err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)	
+	}
+
+	return e.JSON(http.StatusOK, res)
+
+}
+
+func (c *UserController) AuthDelete(e echo.Context) error {
+	uInfo, err := UserInfoViaToken(e)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, err)
+	}
+
+	if err := c.userUsecase.DeleteUser(uInfo.UserId); err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)	
+	}
+
+	return e.String(http.StatusNoContent, "successfully deleted")
+}
 
 func encryptPwd(password string) (string, error) {
 	hashPwd, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -98,7 +195,7 @@ func encryptPwd(password string) (string, error) {
 
 func comparePwd(hashPwd, reqPwd string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(hashPwd), []byte(reqPwd)); err != nil{
-		return fmt.Errorf("The password doesn't match: %w", err)
+		return fmt.Errorf("the password doesn't match: %w", err)
 	}
 	return nil
 }
