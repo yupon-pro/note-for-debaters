@@ -20,8 +20,8 @@ func NewSignUpController(signUpUsecase service.SignUpUsecase) *SignUpController 
 }
 
 func (c *SignUpController) Mount(group *echo.Group) {
-	group.POST("/register", c.Save)
-	group.POST("/authenticate", c.SignUp)
+	group.POST("/tentative_user", c.Save)
+	group.POST("/user", c.SignUp)
 }
 
 func (c *SignUpController) Save(e echo.Context) error {
@@ -43,24 +43,10 @@ func (c *SignUpController) Save(e echo.Context) error {
 
 }
 
-// For reset process
 func (c *SignUpController) SignUp(e echo.Context) error {
 	mailCode := e.FormValue("code")
 
-	userInfo, err := c.signUpUsecase.ReadTmpUser(mailCode)
-	if err != nil{
-		return echo.NewHTTPError(http.StatusBadRequest, err)	
-	}
-
-	if err := c.signUpUsecase.DeleteTmpUser(mailCode); err != nil{
-		return echo.NewHTTPError(http.StatusBadRequest, err)	
-	}
-
-	user, err := c.signUpUsecase.CreateUser(&service.CreateUserInput{
-		Name: userInfo.Name,
-		Email: userInfo.Email,
-		Password: userInfo.Password,
-	})
+	user, err := c.signUpUsecase.SignUp(mailCode)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}

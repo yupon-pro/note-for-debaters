@@ -12,7 +12,7 @@ export default async function Page({
   if(!userId) return <InvalidTokenNotify /> ;
 
   return (
-    <ResetForm userId={userId} />
+    <ResetForm userId={userId} token={token} />
   );
 }
 

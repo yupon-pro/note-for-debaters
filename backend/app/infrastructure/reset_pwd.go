@@ -61,3 +61,10 @@ func (rep *ResetPwdRepositoryInfrastructure) Save(info *domain.ResetPwd) (*domai
 	}
 	return apiResetPwd, nil
 }
+
+func (rep *ResetPwdRepositoryInfrastructure) Delete(token string) error {
+	if err := rep.db.Client.Where("table = ?", token).Delete(&domain.ResetPwd{}).Error; err != nil {
+		return fmt.Errorf("failed to delete reset password table info: %w", err)
+	}
+	return nil
+}

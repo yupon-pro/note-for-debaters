@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/yupon-pro/note-for-debater/domain"
+	"github.com/yupon-pro/note-for-debater/infrastructure"
 )
 
 type CreateUserInput struct{
@@ -18,37 +19,29 @@ type SaveTmpUserInput struct{
 }
 
 type SignUpUsecase interface{
-	ReadTmpUser(mailCode string) (*domain.UserInfo, error)
 	SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error)
-	DeleteTmpUser(mailCode string) error	
-	CreateUser(input *CreateUserInput) (*domain.APIUser, error)
+	SignUp(mailCode string) (*domain.APIUser, error)
 }
 
 type signUpUsecase struct{
 	tmpUserRepository domain.TmpUserRepository
 	userRepository domain.UserRepository
+	transaction infrastructure.Transaction
 }
 
 func NewSignUpUsecase (
 	tmpUserRepository domain.TmpUserRepository, 
 	userRepository domain.UserRepository,
+	transaction infrastructure.Transaction,
 	) SignUpUsecase{
 	return &signUpUsecase{ 
 		tmpUserRepository: tmpUserRepository,
 		userRepository: userRepository,
+		transaction: transaction,
 	}
 }
 
-
-func (n *signUpUsecase) ReadTmpUser(mailCode string) (*domain.UserInfo, error){
-	tmpUser, err := n.tmpUserRepository.Read(mailCode)
-	if err != nil{
-		return nil, err
-	}
-	return tmpUser, nil
-}
-
-func (n *signUpUsecase) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error) {
+func (s *signUpUsecase) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error) {
 	tmpUser := &domain.TmpUser{
 		MailCode: input.MailCode,
 		Name: input.Name,
@@ -58,33 +51,48 @@ func (n *signUpUsecase) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, 
 	if err := tmpUser.Validate(); err != nil{
 		return nil, err
 	}
-	apiUser, err := n.tmpUserRepository.Save(tmpUser)
+	userInfo, err := s.tmpUserRepository.Save(tmpUser)
 	if err != nil{
 		return nil, err
 	}
-	return apiUser, nil
+	return userInfo, nil
 }
 
+func (s *signUpUsecase) SignUp(mailCode string) (*domain.APIUser, error) {
+	s.transaction.Begin()
+	defer func() {
+		if r := recover(); r != nil{
+			s.transaction.Rollback()
+		}
+	}()
 
-func (n *signUpUsecase) DeleteTmpUser(mailCode string) error {
-	if err := n.tmpUserRepository.Delete(mailCode); err != nil{
-		return err
+	userInfo, err := s.tmpUserRepository.Read(mailCode)
+	if err != nil{
+		s.transaction.Rollback()
+		return nil, err
 	}
-	return nil	
-}
 
-func (n *signUpUsecase) CreateUser(input *CreateUserInput) (*domain.APIUser, error) {
 	user := &domain.User{
-		Name: input.Name,
-		Email: input.Email,
-		Password: input.Password,
+		Name: userInfo.Name,
+		Email: userInfo.Email,
+		Password: userInfo.Password,
 	}
 	if err := user.Validate(); err != nil{
+		s.transaction.Rollback()
 		return nil, err
 	}
-	apiUser, err := n.userRepository.Create(user)
+
+	apiUser, err := s.userRepository.Create(user)
 	if err != nil{
+		s.transaction.Rollback()
 		return nil, err
 	}
+
+	if err := s.tmpUserRepository.Delete(mailCode); err != nil{
+		s.transaction.Rollback()
+		return nil, err
+	}
+
+	s.transaction.Commit()
 	return apiUser, nil
 }

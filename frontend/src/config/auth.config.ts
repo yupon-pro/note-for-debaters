@@ -17,14 +17,16 @@ export const authConfig = {
       }
       return true;
     },
-    async jwt({ token, user, }){
+    async jwt({ token, user }){
       if(user && user.id ){
         token.id = user.id;
+        token.accessToken = user.accessToken
       }
       return token;
     },
     async session({ session, token }){
       session.user.id = token.id;
+      session.accessToken = token.accessToken;
       return session;
     }
   },

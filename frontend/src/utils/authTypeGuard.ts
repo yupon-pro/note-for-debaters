@@ -1,4 +1,4 @@
-import { AuthUser, ResetPwdInfo, SignInData, SingUpData } from "@/types/authType";
+import { AuthUser, AuthUserWithToken, ResetPwdInfo, SignInData, SignUpData, TentativeUser } from "@/types/authType";
 import { isObj } from "./objTypeGuard";
 
 export function isLoginData(value: unknown):value is SignInData {
@@ -16,6 +16,12 @@ export function isUser(value: unknown): value is AuthUser{
     typeof user.email === "string";
 }
 
+export function isUserWithToken(value: unknown): value is AuthUserWithToken{
+  if(!isObj(value)) return false;
+  const userWithToken = value as Record<keyof AuthUserWithToken, unknown>;
+  return isUser(userWithToken.user) && typeof userWithToken.accessToken === "string";
+}
+
 export function isSignInData(value: unknown): value is SignInData{
   if(!isObj(value)) return false;
   const user = value as Record<keyof SignInData, unknown>;
@@ -23,10 +29,16 @@ export function isSignInData(value: unknown): value is SignInData{
     typeof user.password === "string";; 
 }
 
-export function isSignUpData(value: unknown): value is SingUpData{
+export function isSignUpData(value: unknown): value is SignUpData{
   if(!isObj(value)) return false;
-  const user = value as Record<keyof SingUpData, unknown>;
+  const user = value as Record<keyof SignUpData, unknown>;
   return isSignInData(user) && typeof user.name === "string"
+}
+
+export function isTentativeUserInfo(value: unknown): value is TentativeUser{
+  if(!isObj(value)) return false;
+  const tmpUser = value as Record<keyof TentativeUser, unknown>;
+  return typeof tmpUser.name === "string" && typeof tmpUser.email === "string"
 }
 
 export function isResetPwdInfo(value: unknown): value is ResetPwdInfo{

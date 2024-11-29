@@ -21,6 +21,7 @@ func NewResetPwdController(resetPwdUsecase usecase.ResetPwdUsecase) *ResetPwdCon
 func (c *ResetPwdController) Mount(group *echo.Group) {
 	group.POST("", c.Create)
 	group.GET("/:token", c.Show)
+	group.DELETE("/:token", c.Delete)
 }
 
 func (c *ResetPwdController) Create(e echo.Context) error {
@@ -35,17 +36,11 @@ func (c *ResetPwdController) Create(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 
-	resetPwd := struct{
-		token string
-		email string
-		id int
-	}{
-		token: res.Token,
-		email: res.Email,
-		id: res.UserId,
-	}
-
-	return e.JSON(http.StatusCreated, resetPwd)
+	return e.JSON(http.StatusCreated, echo.Map{
+		"token": res.Token,
+		"email": res.Email,
+		"id": res.UserId,
+	})
 
 }
 
@@ -56,17 +51,21 @@ func (c *ResetPwdController) Show(e echo.Context) error {
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
+	
+	return e.JSON(http.StatusOK, echo.Map{
+		"token": res.Token,
+		"email": res.Email,
+		"id": res.UserId,
+	})
 
-	resetPwd := struct{
-		token string
-		email string
-		id int
-	}{
-		token: res.Token,
-		email: res.Email,
-		id: res.UserId,
+}
+
+func (c *ResetPwdController) Delete(e echo.Context) error {
+	mailCode := e.Param("token")
+	if err := c.resetPwdUsecase.DeleteResetPwd(mailCode); err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 	
-	return e.JSON(http.StatusOK, resetPwd)
+	return e.String(http.StatusNoContent, "successfully eliminated.")
 
 }

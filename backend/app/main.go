@@ -36,6 +36,8 @@ func main() {
 	mydb.Client.AutoMigrate(&domain.TmpUser{})
 	mydb.Client.AutoMigrate(&domain.ResetPwd{})
 
+	tx := infrastructure.NewTransactionManager(mydb.Client)
+
 	noteRepository := infrastructure.NewNoteRepositoryInfrastructure(mydb)
 	noteUsecase := usecase.NewNoteUsecase(noteRepository)
 	noteController := interfaces.NewNoteController(noteUsecase)
@@ -45,7 +47,7 @@ func main() {
 	userController := interfaces.NewUserController(userUsecase)
 
 	tmpUserRepository := infrastructure.NewTmpUserRepositoryInfrastructure(mydb)
-	signUpUsecase := service.NewSignUpUsecase(tmpUserRepository, userRepository)
+	signUpUsecase := service.NewSignUpUsecase(tmpUserRepository, userRepository, tx)
 	signUpController := interfaces.NewSignUpController(signUpUsecase)
 
 	resetPwdRepository := infrastructure.NewResetPwdRepositoryInfrastructure(mydb)

@@ -3,15 +3,22 @@ export type SignInData = {
   password: string;
 }
 
-export type SingUpData = SignInData & {
+export type SignUpData = SignInData & {
   name: string;
 }
+
+export type TentativeUser = Omit<SignUpData, "password">
 
 export type AuthUser = {
   id: string;
   name: string;
   email: string;
 };
+
+export type AuthUserWithToken = {
+  user: AuthUser;
+  accessToken: string;
+}
 
 export type ResetPwdInfo = {
   token: string;

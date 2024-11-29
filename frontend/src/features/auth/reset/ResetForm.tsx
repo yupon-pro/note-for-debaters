@@ -15,8 +15,8 @@ const initialValue = {
   message: "",
 };
 
-export default function ResetForm({ userId }: { userId: string }){
-  const formAction = resetPasswordFormAction.bind(null, userId);
+export default function ResetForm({ userId, token }: { userId: string, token: string }){
+  const formAction = resetPasswordFormAction.bind(null, userId, token);
   const [state, dispatch] = useFormState(formAction, initialValue);
 
   return(

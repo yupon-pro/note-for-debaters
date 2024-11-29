@@ -30,4 +30,5 @@ func (n ResetPwd) Validate() error {
 type ResetPwdRepository interface{
 	Read(token string) (*APIResetPwd, error)
 	Save(info *ResetPwd) (*APIResetPwd, error)
+	Delete(token string) error
 }

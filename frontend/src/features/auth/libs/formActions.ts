@@ -4,7 +4,7 @@ import { signIn } from "@/config/auth";
 import { MailCodeState, MailInputState, ResetPwdState, SignInState, SignUpState } from "../types/formTypes";
 import { AuthError } from "next-auth";
 import { EmailScheme, ResetPwdScheme, SignInScheme, SignUpScheme } from "../schemes/formSchemes";
-import {  authenticateMailCode, authenticateUser, removeTentativeUser, registerResetToken, registerTentativeUser, registerUser,  resetPasswordDirectly, } from "@/libs/auth";
+import { authenticateUser, deleteResetToken, registerResetToken, registerTentativeUser, registerUser,  resetPasswordDirectly, } from "@/libs/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { sendGmail } from "@/utils/mailer";
@@ -28,7 +28,7 @@ export async function signInFormAction(prevState: SignInState, formData: FormDat
   const { email, password } = safeFields.data;
 
   try{
-    await signIn("credentials", { email, password });
+    await signIn("signIn", { email, password });
   }catch(error){
     const errors = {
       message: 
@@ -44,6 +44,7 @@ export async function signInFormAction(prevState: SignInState, formData: FormDat
   redirect("/mypage"); 
 }
 
+// signup form actions
 export async function signUpFormAction(prevState: SignUpState, formData: FormData):Promise<SignUpState>{
   const safeFields = SignUpScheme.safeParse({
     name: formData.get("name"),
@@ -99,19 +100,10 @@ export async function verifyMailCodeFormAction(prevState: MailCodeState, formDat
   const { code: mailCode } = safeField.data;
 
   try{
-    // [Notion]
-    // This function contains four methods to communicate with api server.
-    // 1. verify the email auth code (gain the user info)
-    // 2. delete the tentative user.
-    // 3. register the user info to the stable user table in back end.
-    const signUpData = await authenticateMailCode(mailCode);
+    
+    const userWithToken = await registerUser(mailCode);
 
-    await removeTentativeUser(mailCode);
-    await registerUser(signUpData);
-    await signIn("credentials", { 
-      email: signUpData.email, 
-      password: signUpData.password 
-    });
+    await signIn("SignUp", userWithToken)
 
     const result = {
       status: "Success",
@@ -119,16 +111,21 @@ export async function verifyMailCodeFormAction(prevState: MailCodeState, formDat
 
     return result;
 
-
   }catch(error){
     const errors = {
       status: "Failure",
-      message: `MailCodeError: ${error instanceof Error ? error.message : "Something wrong"}`
-    } as const;
+      message: 
+        error instanceof AuthError
+        ? error.type === "CredentialsSignin"
+          ? "invalid Credentials"
+          : "Something went wrong."
+        : "An unknown error occurred"
+      } as const;
     return errors
   }
 }
 
+// reset form actions
 export async function verifyEmailFormAction(prevState: MailInputState, formData: FormData): Promise<MailInputState> {
   const safeFields = EmailScheme.safeParse({
     email: formData.get("email"),
@@ -165,6 +162,7 @@ export async function verifyEmailFormAction(prevState: MailInputState, formData:
 
 export async function resetPasswordFormAction(
   userId: string,
+  resetToken: string,
   prevState: ResetPwdState, 
   formData: FormData, 
 ): Promise<ResetPwdState> {
@@ -186,10 +184,11 @@ export async function resetPasswordFormAction(
 
   try{
     const signInData = await resetPasswordDirectly(userId, password);
-    await signIn("credentials", { 
+    await signIn("signIn", { 
       email: signInData.email, 
       password: signInData.password,
     });
+    await deleteResetToken(resetToken)
 
   }catch(error){
     return { message: `SignUpError: ${error instanceof Error ? error.message : "Something wrong"}` }

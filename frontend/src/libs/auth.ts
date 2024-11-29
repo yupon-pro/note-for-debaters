@@ -1,12 +1,12 @@
 "use server";
 
 import { auth } from "@/config/auth";
-import { AuthUser, SignInData, SingUpData } from "@/types/authType";
-import { isResetPwdInfo, isSignInData, isSignUpData, isUser } from "@/utils/authTypeGuard";
+import { AuthUser, AuthUserWithToken, SignInData,} from "@/types/authType";
+import { isResetPwdInfo, isSignInData, isTentativeUserInfo, isUser, isUserWithToken } from "@/utils/authTypeGuard";
 import { FetchWithAuth } from "@/utils/fetchClass";
 
 // sign in.
-export async function authenticate(signInData: SignInData):Promise<AuthUser>{
+export async function authenticate(signInData: SignInData): Promise<AuthUserWithToken>{
   // [Notion]
   // This function is special.
   // Other functions in this script will be called nearer client script (form actions).
@@ -27,20 +27,20 @@ export async function authenticate(signInData: SignInData):Promise<AuthUser>{
       throw new Error("Fetch Error");
     }
 
-    const user = await res.json();
-    if(!isUser(user)) throw new Error("Type User Error");
+    const userWithToken = await res.json();
+    if(!isUserWithToken(userWithToken)) throw new Error("Type of User with token is Error");
 
-    return user;
+    return userWithToken;
   }catch(error){
     throw error;
   }
 }
 
 // sign up actions
-export async function registerTentativeUser(signUpData: SingUpData, mailCode: string){
+export async function registerTentativeUser(signUpData: SignInData, mailCode: string){
   // This function assume that the password won't be encrypted in server api.
   // The password is supposed to be encrypted when the sign up process successes.
-  const uri = `${process.env.SERVER_URI}/tentative_user`;
+  const uri = `${process.env.SERVER_URI}/sign_up/tentative_user`;
 
   const tentativeUser = {
     ...signUpData,
@@ -60,56 +60,22 @@ export async function registerTentativeUser(signUpData: SingUpData, mailCode: st
       throw new Error("Fetch Error");
     }
 
-    const signUpData = await res.json();
-    if(!isSignUpData(signUpData)) throw new Error("SignUp Data Type Error");
-    return signUpData;
+    const tmpUserInfo = await res.json();
+    if(!isTentativeUserInfo(tmpUserInfo)) throw new Error("SignUp Data Type Error");
+    return tmpUserInfo;
 
   }catch(error){
     throw error;
   }
 }
 
-
-export async function authenticateMailCode(mailCode: string): Promise<SingUpData> {
-  const uri = `${process.env.SERVER_URI}/tentative_user/${mailCode}`;
-
-  try{
-    const res = await fetch(uri);
-
-    if(res.status !== 200) {
-      throw new Error("Failed to get tentative user data.")
-    }
-    
-    const signUpData = await res.json();
-    if(!isSignUpData(signUpData)) throw new Error("SignUp Data Type Error");
-    return signUpData
-  
-
-  }catch(error){
-    console.log(error);
-    throw error
-  }
-}
-
-export async function removeTentativeUser(mailCode: string) {
-  const uri = `${process.env.SERVER_URI}/tentative_user/${mailCode}`;
-
-  try{
-    const res = await fetch(uri, { method: "DELETE" });
-
-    if(res.status !== 204) {
-      throw new Error("Failed to delete tentative user data");
-    }
-
-    await res.json();
-
-  }catch(error){
-    throw error;
-  }
-}
-
-export async function registerUser(signUpData: SingUpData): Promise<SignInData> {
-  const uri = `${process.env.SERVER_URI}/user/signup`;
+export async function registerUser(mailCode: string): Promise<AuthUserWithToken> {
+  // [Notion]
+  // This function contains four methods to communicate with api server.
+  // 1. verify the email auth code
+  // 2. delete the tentative user.
+  // 3. register the user info to the stable user table in back end.
+  const uri = `${process.env.SERVER_URI}/sign_up/user`;
 
   try{
     const res = await fetch(uri, {
@@ -117,24 +83,28 @@ export async function registerUser(signUpData: SingUpData): Promise<SignInData> 
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(signUpData),
+      body: JSON.stringify({ "mail_code": mailCode })
     });
 
-    if(res.status !== 201) {
-      throw new Error("Fail to create user");
+    if(res.status !== 201){
+      throw new Error("Fetch Error");
     }
+    
+    const userWithToken = await res.json();
+    if(!isUserWithToken(userWithToken)) throw new Error("Type of User with token is Error");
 
-    const signInData = await res.json();
-    if(!isSignInData(signInData)) throw new Error("SignIn Data Type Error");
-    return signInData
-
+    return userWithToken;
   }catch(error){
-    throw error;
+    console.log(error);
+    throw error
   }
 }
 
 // reset pwd actions.
 export async function authenticateUser(email: string){
+  // [Notion]
+  // Because the reset pwd actions are used when the user doesn't sign in, 
+  // it is necessary to access to the resource to gain user id.
   const uri = `${process.env.SERVER_URI}/user/${email}`;
 
   try{
@@ -221,10 +191,29 @@ export async function resetPasswordDirectly(userId: string, password: string): P
   }
 }
 
+export async function deleteResetToken(token: string){
+  const uri = `${process.env.SERVER_URI}/reset_pwd/${token}`;
+
+  try{
+    const res = await fetch(uri, { method: "DELETE" });
+
+    if(res.status !== 204) {
+      throw new Error("Fail to delete token.");
+    }
+
+    const resetPwdInfo = await res.json();
+    if(!isResetPwdInfo(resetPwdInfo)) throw new Error("Type of user id is wrong.");
+    return resetPwdInfo.id;
+
+  }catch(error){
+    console.log(error);
+    return null;
+  }
+}
+
 // Actions needed to be authorized
 export async function patchUser(name: string, password: string): Promise<AuthUser> {
   const uri = `${process.env.SERVER_URI}/user/auth/`;
-
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to Get Access Token");
 

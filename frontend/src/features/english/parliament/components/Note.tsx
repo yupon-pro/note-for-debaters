@@ -106,7 +106,8 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
         const registers = saveData.filter((memo) => !memo.serverMemoId);
         const updates = saveData.filter((memo) => !!memo.serverMemoId);
 
-        bakeToast && toaster.promise(Promise.all([noteAction(), saveMemos(registers), editMemos(updates)]), {
+        if(!bakeToast) return;
+        toaster.promise(Promise.all([noteAction(), saveMemos(registers), editMemos(updates)]), {
           success: {
             title: "Successfully saved!",
             description: "Looks great",
@@ -116,10 +117,11 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
             description: "Something wrong with the save",
           },
           loading: { title: "saving...", description: "Please wait" },
-        })
+        });
       }
     }else{
-      bakeToast && toaster.create({
+      if(!bakeToast) return;
+      toaster.create({
         title: "Your date is saved only locally.",
         type: "success",
       });
