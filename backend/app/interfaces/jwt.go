@@ -2,6 +2,7 @@ package interfaces
 
 import (
 	"fmt"
+	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -9,9 +10,39 @@ import (
 	"github.com/yupon-pro/note-for-debater/utils"
 )
 
+type jwtCustomClaims struct {
+	Email string 
+	UserId int   
+	jwt.RegisteredClaims
+}
+
 type UserInToken struct{
 	UserId int
 	Email string
+}
+
+func GetJWTToken(email string, userId int) (string, error) {
+	claims := &jwtCustomClaims{
+		email,
+		userId,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	JWTSecret, err := utils.GetJWTSecret()
+	if err != nil{
+		return "", fmt.Errorf("failed to get environment: %w", err)
+	}
+
+	t, err := token.SignedString([]byte(JWTSecret))
+	if err != nil{
+		return "", fmt.Errorf("failed to create access token: %w", err)
+	}
+
+	return t, nil
 }
 
 func UserInfoViaToken(e echo.Context) (UserInToken, error){

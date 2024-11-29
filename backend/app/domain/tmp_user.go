@@ -14,8 +14,7 @@ type TmpUser struct{
 	UpdatedAt time.Time `gorm:"auto_update_time; column:updated_at"`
 }
 
-type APITmpUser struct{
-	MailCode string `gorm:"column:mail_code"`
+type UserInfo struct{
 	Name string `gorm:"column:name"`
 	Email string `gorm:"column:email"`
 	Password string `gorm:"column:password"`
@@ -30,7 +29,7 @@ func (n TmpUser) Validate() error {
 }
 
 type TmpUserRepository interface{
-	Read(mailCode string) (*APITmpUser, error)
-	Save(tmpUser *TmpUser) (*APITmpUser, error)
+	Read(mailCode string) (*UserInfo, error)
+	Save(tmpUser *TmpUser) (*UserInfo, error)
 	Delete(mailCode string) error
 }

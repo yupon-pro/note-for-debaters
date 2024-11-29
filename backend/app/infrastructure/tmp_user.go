@@ -17,7 +17,7 @@ func NewTmpUserRepositoryInfrastructure(db *MyDB) domain.TmpUserRepository {
 	return &TmpUserRepositoryInfrastructure{db}
 }
 
-func (rep *TmpUserRepositoryInfrastructure) Read(mailCode string) (*domain.APITmpUser, error) {
+func (rep *TmpUserRepositoryInfrastructure) Read(mailCode string) (*domain.UserInfo, error) {
 	var tmpUser domain.TmpUser
 	if err := rep.db.Client.Where("mail_code = ?", mailCode).First(&tmpUser).Error; err != nil {
 		return nil, fmt.Errorf("failed to read user: %w", err)
@@ -28,20 +28,23 @@ func (rep *TmpUserRepositoryInfrastructure) Read(mailCode string) (*domain.APITm
 		return nil, fmt.Errorf("the code is expired")
 	}
 
-	apiTmpUser := &domain.APITmpUser{
-		MailCode: tmpUser.MailCode,
+	userInfo := &domain.UserInfo{
 		Name: tmpUser.Name,
 		Email: tmpUser.Email,
 		Password: tmpUser.Password,
 	}
 
-	return apiTmpUser, nil
+	return userInfo, nil
 }
 
-func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (*domain.APITmpUser, error) {
-	apiTmpUser := &domain.APITmpUser{}
+func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (userInfo *domain.UserInfo, err error) {
+	hashPwd, err := utils.EncryptPwd(tmpUser.Password)
+	if err != nil{
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+	tmpUser.Password = hashPwd
 
-	result := rep.db.Client.
+	err = rep.db.Client.
 		Model(&domain.TmpUser{}).
 		Clauses(
 			clause.OnConflict{
@@ -56,12 +59,13 @@ func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (*doma
 			}},
 		).
 		Create(tmpUser).
-		Scan(apiTmpUser)
+		Scan(userInfo).
+		Error
 
-	if result.Error != nil {
-		return nil, fmt.Errorf("failed to create user: %w", result.Error)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
-	return apiTmpUser, nil
+	return userInfo, nil
 }
 
 // What is clause.OnConflict? Refer to

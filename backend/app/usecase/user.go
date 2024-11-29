@@ -7,7 +7,6 @@ import (
 type UserUsecase interface{
 	ReadAPIUser(email string) (*domain.APIUser, error)
 	ReadAuthUser(email string) (*domain.AuthUser, error)
-	CreateUser(input *CreateUserInput) (*domain.APIUser, error)
 	UpdateUser(input *UpdateUserInput) (*domain.APIUser, error)
 	DeleteUser(userId int) error	
 }
@@ -46,22 +45,6 @@ func (n *userUsecase) ReadAuthUser(email string) (*domain.AuthUser, error){
 		return nil, err
 	}
 	return user, nil
-}
-
-func (n *userUsecase) CreateUser(input *CreateUserInput) (*domain.APIUser, error) {
-	user := &domain.User{
-		Name: input.Name,
-		Email: input.Email,
-		Password: input.Password,
-	}
-	if err := user.Validate(); err != nil{
-		return nil, err
-	}
-	apiUser, err := n.userRepository.Create(user)
-	if err != nil{
-		return nil, err
-	}
-	return apiUser, nil
 }
 
 func (n *userUsecase) UpdateUser(input *UpdateUserInput) (*domain.APIUser, error) {

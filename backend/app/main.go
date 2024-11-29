@@ -11,6 +11,7 @@ import (
 	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/infrastructure"
 	"github.com/yupon-pro/note-for-debater/interfaces"
+	"github.com/yupon-pro/note-for-debater/service"
 	"github.com/yupon-pro/note-for-debater/usecase"
 )
 
@@ -44,14 +45,14 @@ func main() {
 	userController := interfaces.NewUserController(userUsecase)
 
 	tmpUserRepository := infrastructure.NewTmpUserRepositoryInfrastructure(mydb)
-	tmpUserUsecase := usecase.NewTmpUserUsecase(tmpUserRepository)
-	tmpUserController := interfaces.NewTmpUserController(tmpUserUsecase)
+	signUpUsecase := service.NewSignUpUsecase(tmpUserRepository, userRepository)
+	signUpController := interfaces.NewSignUpController(signUpUsecase)
 
 	resetPwdRepository := infrastructure.NewResetPwdRepositoryInfrastructure(mydb)
 	resetPwdUsecase := usecase.NewResetPwdUsecase(resetPwdRepository)
 	resetPwdController := interfaces.NewResetPwdController(resetPwdUsecase)
 
-	controllers := interfaces.NewControllers(noteController, userController, tmpUserController, resetPwdController)
+	controllers := interfaces.NewControllers(noteController, userController, signUpController, resetPwdController)
 	controllers.Mount(e)
 
 	e.GET("/", func(c echo.Context)error{return c.String(http.StatusOK, "hello")})
