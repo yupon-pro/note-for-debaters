@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/usecase"
+	"github.com/yupon-pro/note-for-debater/utils"
 )
 
 type NoteController struct {
@@ -39,7 +40,7 @@ func (c *NoteController) Show(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
 
-	return e.JSON(http.StatusOK, note)
+	return e.JSON(http.StatusOK, noteMapper(*note))
 }
 
 func (c *NoteController) ShowAll(e echo.Context) error {
@@ -48,12 +49,12 @@ func (c *NoteController) ShowAll(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	note, err := c.noteUsecase.ReadAllNotes(id)
+	notes, err := c.noteUsecase.ReadAllNotes(id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
 
-	return e.JSON(http.StatusOK, note)
+	return e.JSON(http.StatusOK, utils.Map(notes, noteMapper))
 }
 
 func (c *NoteController) ShowLatest(e echo.Context) error {
@@ -66,7 +67,7 @@ func (c *NoteController) ShowLatest(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
 
-	return e.JSON(http.StatusOK, note)
+	return e.JSON(http.StatusOK, noteMapper(*note))
 }
 
 func (c *NoteController) Create(e echo.Context) error {
@@ -75,12 +76,12 @@ func (c *NoteController) Create(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	res, err := c.noteUsecase.CreateNote(req)
+	note, err := c.noteUsecase.CreateNote(req)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	return e.JSON(http.StatusCreated, res)
+	return e.JSON(http.StatusCreated, noteMapper(*note))
 }
 
 func (c *NoteController) Update(e echo.Context) error {
@@ -110,7 +111,7 @@ func (c *NoteController) Delete(e echo.Context) error {
 	return e.String(http.StatusNoContent, "status ok")
 }
 
-func noteMapper(note *domain.Note) echo.Map {
+func noteMapper(note domain.Note) echo.Map {
 	return echo.Map{
 		"noteId": note.NoteId,
 		"userId": note.UserId,
