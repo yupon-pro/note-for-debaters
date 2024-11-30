@@ -1,6 +1,8 @@
 package service
 
 import (
+	// "fmt"
+
 	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/infrastructure"
 )
@@ -52,6 +54,7 @@ func (s *signUpUsecase) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, 
 		return nil, err
 	}
 	userInfo, err := s.tmpUserRepository.Save(tmpUser)
+
 	if err != nil{
 		return nil, err
 	}
@@ -96,3 +99,9 @@ func (s *signUpUsecase) SignUp(mailCode string) (*domain.APIUser, error) {
 	s.transaction.Commit()
 	return apiUser, nil
 }
+
+// [Notion]
+// Why should I create service layer? What is service layer?
+// To prevent programer from mixing use case or calling other use case inside user case layer,
+// the service layer gets independent.
+// Refer to https://qiita.com/shunjikonishi/items/9cbf67314000cc42fbcc#service

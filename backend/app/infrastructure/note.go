@@ -41,7 +41,7 @@ func (rep *NoteRepositoryInfrastructure) ReadLatest(userId int) (*domain.Note, e
 
 
 func (rep *NoteRepositoryInfrastructure) Create(note *domain.Note) (*domain.Note, error) {
-	var resNote *domain.Note
+	resNote := &domain.Note{}
 
 	result := rep.db.Client.Model(resNote).Clauses(clause.Returning{}).Create(note).Scan(resNote)
 	if result.Error != nil {
@@ -51,7 +51,7 @@ func (rep *NoteRepositoryInfrastructure) Create(note *domain.Note) (*domain.Note
 }
 
 func (rep *NoteRepositoryInfrastructure) Update(note *domain.Note) (*domain.Note, error) {
-	var resNote *domain.Note
+	resNote := &domain.Note{}
 
 	result := rep.db.Client.Model(resNote).Clauses(clause.Returning{}).Where("note_id = ?", note.NoteId).Updates(note).Scan(resNote)
 	if result.Error != nil {

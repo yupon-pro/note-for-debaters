@@ -11,7 +11,7 @@ import { useAtom } from "jotai";
 export default function ConsentForm(){
   const [consentStatus, setConsentStatus] = useAtom(consentStatusAtom);
 
-  function handleConcent() {
+  function handleConsent() {
     setConsentStatus(true);
   }
 
@@ -56,8 +56,8 @@ export default function ConsentForm(){
               </Button>
             </DialogActionTrigger>
             <DialogActionTrigger>
-              <Button onClick={handleConcent} variant="outline">
-                Concent
+              <Button onClick={handleConsent} variant="outline">
+                Consent
               </Button>
             </DialogActionTrigger>
           </DialogFooter>

@@ -43,6 +43,7 @@ export async function signOutAction(){
 
 // sign up actions
 export async function registerTentativeUser(signUpData: SignInData, mailCode: string){
+  // [Notion]
   // This function assume that the password won't be encrypted in server api.
   // The password is supposed to be encrypted when the sign up process successes.
   const uri = `${process.env.SERVER_URI}/sign_up/tentative_user`;

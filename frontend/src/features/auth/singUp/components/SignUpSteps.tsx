@@ -25,14 +25,11 @@ export default function SignUpSteps() {
   useEffect(() => {
     // [Notion]
     // If a specific process is successful, the system automatically more the user to the next step.
-    if(signUpFromStatus === "Success"){
-      setActiveStep(2);
-    }
-    if(mailCodeStatus=== "Success"){
-      setActiveStep(3);
-    }
+    if(consentStatus) setActiveStep(1);
+    if(signUpFromStatus === "Success") setActiveStep(2);
+    if(mailCodeStatus=== "Success") setActiveStep(3);
 
-  }, [signUpFromStatus, mailCodeStatus]);
+  }, [consentStatus, signUpFromStatus, mailCodeStatus]);
 
   function handleNext() {
     // A user can't go forward without certain procedure.

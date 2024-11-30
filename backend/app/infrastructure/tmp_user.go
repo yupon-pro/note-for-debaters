@@ -37,13 +37,15 @@ func (rep *TmpUserRepositoryInfrastructure) Read(mailCode string) (*domain.UserI
 	return userInfo, nil
 }
 
-func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (userInfo *domain.UserInfo, err error) {
+func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (*domain.UserInfo, error) {
 	hashPwd, err := utils.EncryptPwd(tmpUser.Password)
 	if err != nil{
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 	tmpUser.Password = hashPwd
 
+	userInfo := &domain.UserInfo{}
+	
 	err = rep.db.Client.
 		Model(&domain.TmpUser{}).
 		Clauses(
@@ -52,7 +54,6 @@ func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (userI
 				DoUpdates: clause.AssignmentColumns([]string{"mail_code", "name" , "password", "updated_at"}),
 			}, 
 			clause.Returning{Columns: []clause.Column{
-				{Name: "mail_code"},
 				{Name: "name"},
 				{Name: "email"},
 				{Name: "password"},
@@ -63,6 +64,7 @@ func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (userI
 		Error
 
 	if err != nil {
+		fmt.Println(err)
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 	return userInfo, nil

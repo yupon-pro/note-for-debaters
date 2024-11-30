@@ -36,7 +36,7 @@ func (rep *UserRepositoryInfrastructure) ReadAuth(email string) (*domain.AuthUse
 // Refer to https://gorm.io/docs/advanced_query.html#Smart-Select-Fields
 
 func (rep *UserRepositoryInfrastructure) Create(user *domain.User) (*domain.APIUser, error) {
-	var apiUser *domain.APIUser
+	apiUser := &domain.APIUser{}
 	res := []clause.Column{
 		{Name: "user_id"},
 		{Name: "email"},
@@ -49,8 +49,14 @@ func (rep *UserRepositoryInfrastructure) Create(user *domain.User) (*domain.APIU
 	return apiUser, nil
 }
 
+// [Notion]
+// Why can't I user statement like as "var apiUser *domain.APIUser"?
+// because this variable of apiUser doesn't have any memory, it will be a potential risk of error.
+// It is safe to secure the memory for variable by initializing the value or declaring the value without pointer.
+// Refer to https://www.digitalocean.com/community/conceptual-articles/understanding-pointers-in-go#nil-pointers
+
 func (rep *UserRepositoryInfrastructure) Update(user *domain.User) (*domain.APIUser, error) {
-	var apiUser *domain.APIUser
+	apiUser := &domain.APIUser{}
 	res := []clause.Column{
 		{Name: "user_id"},
 		{Name: "email"},
@@ -63,8 +69,9 @@ func (rep *UserRepositoryInfrastructure) Update(user *domain.User) (*domain.APIU
 	return apiUser, nil
 }
 
-// What is Clauses and columns? Refer to
-// https://gorm.io/docs/update.html#Returning-Data-From-Modified-Rows
+// [Notion]
+// What is Clauses and columns? 
+// Refer to https://gorm.io/docs/update.html#Returning-Data-From-Modified-Rows
 
 func (rep *UserRepositoryInfrastructure) Delete(userId int) error {
 	result := rep.db.Client.Where("user_id = ?", userId).Delete(&domain.User{})
