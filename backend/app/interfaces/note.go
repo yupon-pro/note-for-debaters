@@ -22,10 +22,10 @@ func NewNoteController(noteUsecase usecase.NoteUsecase) *NoteController {
 
 func (c *NoteController) Mount(group *echo.Group, jwtMiddleware echo.MiddlewareFunc) {
 	group.GET("/:id", c.Show, jwtMiddleware)
-	group.GET("/", c.ShowAll, jwtMiddleware)
+	group.GET("", c.ShowAll, jwtMiddleware)
 	group.GET("/latest", c.ShowLatest, jwtMiddleware)
-	group.POST("/", c.Create, jwtMiddleware)
-	group.PATCH("/:id", c.Update, jwtMiddleware)
+	group.POST("", c.Create, jwtMiddleware)
+	group.PATCH("", c.Update, jwtMiddleware)
 	group.DELETE("/:id", c.Delete, jwtMiddleware)
 }
 
@@ -90,12 +90,12 @@ func (c *NoteController) Update(e echo.Context) error {
 		return err
 	}
 
-	res, err := c.noteUsecase.UpdateNote(req)
+	note, err := c.noteUsecase.UpdateNote(req)
 	if err != nil {
 		return err
 	}
 
-	return e.JSON(http.StatusCreated, res)
+	return e.JSON(http.StatusCreated, noteMapper(*note))
 }
 
 func (c *NoteController) Delete(e echo.Context) error {

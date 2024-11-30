@@ -96,7 +96,7 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
       if(memoData.length){
         const saveData = memoData.map((memo) => ({
           ...memo, 
-          user,
+          userId: user.id,
           x: memo.x.toString(),
           y: memo.y.toString(),
           width: memo.width.toString(),

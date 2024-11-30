@@ -16,7 +16,7 @@ type UpdateNote struct {
 type Note struct {
 	NoteId int `gorm:"primary_key; AUTO_INCREMENT; column: note_id"`
   UserId int	`gorm:"column: user_id"`
-	User User `gorm:"foreignKey:UserId"`
+	User User `gorm:"foreignKey:user_id"`
 	Title string `gorm:"column: title; not null"`
   Table string `gorm:"column: table; not null"`
   Script string `gorm:"column: script"`

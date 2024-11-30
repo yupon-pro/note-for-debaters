@@ -8,7 +8,8 @@ function isMemo(value: unknown): value is ServerMemoData{
   const memo = value as Record<keyof ServerMemoData, unknown>;
   if(!isUser(memo.user)) return false;
 
-  return typeof memo.x === "string" &&
+  return typeof memo.userId === "string" && 
+    typeof memo.x === "string" &&
     typeof memo.y === "string" &&
     typeof memo.width === "string" &&
     typeof memo.height === "string" &&

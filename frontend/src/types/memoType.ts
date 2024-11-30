@@ -3,7 +3,7 @@ import { AuthUser } from "./authType";
 type BaseMemoData = {
   clientMemoId: string;
   serverMemoId?: string;
-  noteId?: string;
+  noteId: string;
   content: string;
 }
 
@@ -19,11 +19,13 @@ export type ServerMemoData = BaseMemoData & {
   height: string;
   x: string;
   y: string;
+  userId: string;
   user: AuthUser;
   updatedAt: string;
   createdAt: string;
 };
 
-export type PostMemo = Omit<ServerMemoData, "serverMemoId" | "updatedAt" | "createdAt">;
+export type PostMemo = Omit<ServerMemoData, "user" | "serverMemoId" | "updatedAt" | "createdAt">;
 
-export type UpdateMemo = Pick<ServerMemoData, "serverMemoId"> & Partial<ServerMemoData>;
+export type UpdateMemo = Pick<ServerMemoData, "serverMemoId"> 
+  & Partial<Omit<ServerMemoData, "user" | "userId" | "updatedAt" | "createdAt">>;
