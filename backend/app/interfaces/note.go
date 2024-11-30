@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/usecase"
 )
 
@@ -69,24 +70,12 @@ func (c *NoteController) ShowLatest(e echo.Context) error {
 }
 
 func (c *NoteController) Create(e echo.Context) error {
-	req := &struct {
-		UserId int
-		Title string
-		Script string
-		Table string
-	}{}
+	req := &usecase.CreateNoteInput{}
 	if err := e.Bind(req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	res, err := c.noteUsecase.CreateNote(
-		&usecase.CreateNoteInput{
-			UserId: req.UserId,
-			Title: req.Title,
-			Script: req.Script,
-			Table: req.Table,
-		},
-	)
+	res, err := c.noteUsecase.CreateNote(req)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
@@ -95,28 +84,12 @@ func (c *NoteController) Create(e echo.Context) error {
 }
 
 func (c *NoteController) Update(e echo.Context) error {
-	req := &struct {
-		NoteId int
-		UserId int
-		Title string
-		Script string
-		Table string
-	}{}
+	req := &usecase.UpdateNoteInput{}
 	if err := e.Bind(req); err != nil {
 		return err
 	}
 
-	res, err := c.noteUsecase.UpdateNote(
-		&usecase.UpdateNoteInput{
-			NoteId: req.NoteId,
-			CreateNoteInput: usecase.CreateNoteInput{
-				UserId: req.UserId,
-				Title: req.Title,
-				Script: req.Script,
-				Table: req.Table,
-			},
-		},
-	)
+	res, err := c.noteUsecase.UpdateNote(req)
 	if err != nil {
 		return err
 	}
@@ -135,4 +108,21 @@ func (c *NoteController) Delete(e echo.Context) error {
 	}
 
 	return e.String(http.StatusNoContent, "status ok")
+}
+
+func noteMapper(note *domain.Note) echo.Map {
+	return echo.Map{
+		"noteId": note.NoteId,
+		"userId": note.UserId,
+		"user": echo.Map{
+			"id": note.User.UserId,
+			"name": note.User.Name,
+			"email": note.User.Email,
+		},
+		"title": note.Title,
+		"script": note.Script,
+		"table": note.Table,
+		"updatedAt": note.UpdatedAt,
+		"createdAt": note.CreatedAt,
+	}
 }

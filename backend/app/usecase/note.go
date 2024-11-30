@@ -1,9 +1,6 @@
 package usecase
 
 import (
-	"fmt"
-	"reflect"
-
 	"github.com/yupon-pro/note-for-debater/domain"
 )
 
@@ -81,16 +78,11 @@ func (n *noteUsecase) CreateNote(input *CreateNoteInput) (*domain.Note, error) {
 }
 
 func (n *noteUsecase) UpdateNote(input *UpdateNoteInput) (*domain.Note, error) {
-	note, err := n.noteRepository.Read(input.NoteId)
-	if err != nil{
-		return nil, err
-	}
-
-	if err := updateNoteFields(note, input); err != nil{
-		return nil, err
-	}
-	if err := note.Validate(); err != nil{
-		return nil, err
+	note := &domain.Note{
+		UserId: input.UserId,
+		Title: input.Title,
+		Script: input.Script,
+		Table: input.Table,
 	}
 	resNote, err := n.noteRepository.Update(note)
 	if  err != nil{
@@ -104,28 +96,4 @@ func (n *noteUsecase) DeleteNote(noteId int) error {
 		return err
 	}
 	return nil	
-}
-
-
-func updateNoteFields(note *domain.Note, input *UpdateNoteInput) error {
-	// リフレクションを使用
-	noteValue := reflect.ValueOf(note).Elem()
-	inputValue := reflect.ValueOf(input).Elem()
-	// Elem returns the value that the interface v contains or that the pointer v points to
-
-	for i := 0; i < inputValue.NumField(); i++ {
-		fieldName := inputValue.Type().Field(i).Name
-		inputField := inputValue.Field(i)
-
-		if inputField.Kind() == reflect.String && inputField.String() != "" {
-			noteField := noteValue.FieldByName(fieldName)
-			if !noteField.IsValid() || !noteField.CanSet() || noteField.Kind() != reflect.String {
-				return fmt.Errorf("failed to update value")
-			}else{
-				noteField.SetString(inputField.String())
-			}
-		}
-	}
-
-	return nil
 }

@@ -14,7 +14,7 @@ type ResetPwdUsecase interface{
 
 type SaveResetPwdInput struct{
 	Token string `json:"token" form:"token"`
-	UserId string `json:"user_id" form:"user_id"`
+	UserId string `json:"id" form:"id"`
   Email string `json:"email" form:"email"`
 }
 

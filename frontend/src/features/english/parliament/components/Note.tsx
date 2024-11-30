@@ -90,7 +90,7 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
       if(noteId) {
         noteAction = async () => await editNote({ noteId, title: noteTitle, table: noteTable, script: noteScript });
       }else{
-        noteAction = async () => await saveNote({ user, title: noteTitle, table: noteTable, script: noteScript });
+        noteAction = async () => await saveNote({ userId: user.id, title: noteTitle, table: noteTable, script: noteScript });
       }
 
       if(memoData.length){

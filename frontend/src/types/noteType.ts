@@ -2,6 +2,7 @@ import { AuthUser } from "./authType";
 
 export type Note = {
   noteId: string;
+  userId: string;
   user: AuthUser;
   title: string;
   table: string;
@@ -10,8 +11,8 @@ export type Note = {
   createdAt: string;
 }
 
-export type PostNote = Pick<Note, "user" | "title" | "table"> 
+export type PostNote = Pick<Note, "userId" | "title" | "table" > 
   & Partial<Pick<Note, "script">>;
 
 export type UpdateNote = Pick<Note, "noteId"> &
-  Partial<Omit<Note, "user" | "updatedAt" | "createdAt">>;
+  Partial<Omit<Note, "user" | "userId" | "updatedAt" | "createdAt">>;

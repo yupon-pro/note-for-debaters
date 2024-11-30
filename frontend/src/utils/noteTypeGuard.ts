@@ -9,6 +9,7 @@ export function isNote(value: unknown): value is Note{
   if(!isUser(note.user)) return false;
 
   return typeof note.noteId === "string" && 
+    typeof note.userId === "string" &&
     typeof note.title === "string" &&
     typeof note.content === "string" &&
     typeof note.createdAt === "string" &&

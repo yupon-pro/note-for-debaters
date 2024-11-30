@@ -44,7 +44,7 @@ export async function registerTentativeUser(signUpData: SignInData, mailCode: st
 
   const tentativeUser = {
     ...signUpData,
-    "mail_code": mailCode,
+    mailCode,
   };
 
   try{
@@ -83,7 +83,7 @@ export async function registerUser(mailCode: string): Promise<AuthUserWithToken>
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ "mail_code": mailCode })
+      body: JSON.stringify({ mailCode })
     });
 
     if(res.status !== 201){
@@ -123,7 +123,7 @@ export async function authenticateUser(email: string){
   }
 }
 
-export async function registerResetToken(token: string, userId: string, email: string) {
+export async function registerResetToken(token: string, id: string, email: string) {
   const uri = `${process.env.SERVER_URI}/reset_pwd/`;
 
   try{
@@ -132,7 +132,7 @@ export async function registerResetToken(token: string, userId: string, email: s
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ token, email, "user_id": userId }),
+      body: JSON.stringify({ token, email, id }),
     });
 
     if(res.status !== 201) {
@@ -166,7 +166,7 @@ export async function authenticateToken(token: string){
   }
 }
 
-export async function resetPasswordDirectly(userId: string, password: string): Promise<SignInData> {
+export async function resetPasswordDirectly(id: string, password: string): Promise<SignInData> {
   const uri = `${process.env.SERVER_URI}/user`;
 
   try{
@@ -175,7 +175,7 @@ export async function resetPasswordDirectly(userId: string, password: string): P
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ password, "user_id": userId }),
+      body: JSON.stringify({ password, id }),
     });
 
     if(res.status !== 200) {

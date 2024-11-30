@@ -12,7 +12,7 @@ type CreateUserInput struct{
 }
 
 type SaveTmpUserInput struct{
-	MailCode string `json:"mail_code" form:"mail_code"`
+	MailCode string `json:"mailCode" form:"mailCode"`
 	Name string `json:"name" form:"name"`
   Email string `json:"email" form:"email"`
   Password string `json:"password" form:"password"`

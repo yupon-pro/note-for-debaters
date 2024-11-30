@@ -53,7 +53,7 @@ func (rep *NoteRepositoryInfrastructure) Create(note *domain.Note) (*domain.Note
 func (rep *NoteRepositoryInfrastructure) Update(note *domain.Note) (*domain.Note, error) {
 	var resNote *domain.Note
 
-	result := rep.db.Client.Model(resNote).Where("note_id = ?", note.NoteId).Updates(note).Scan(resNote)
+	result := rep.db.Client.Model(resNote).Clauses(clause.Returning{}).Where("note_id = ?", note.NoteId).Updates(note).Scan(resNote)
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to update note: %w", result.Error)
 	}

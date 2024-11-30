@@ -5,15 +5,10 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/usecase"
 	"github.com/yupon-pro/note-for-debater/utils"
 )
-
-type APIUserResponse struct{
-	id int
-	name string
-	email string
-}
 
 
 type UserController struct {
@@ -78,11 +73,7 @@ func (c *UserController) Show(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 	
-	return e.JSON(http.StatusOK, APIUserResponse{
-		id: res.UserId,
-		name: res.Name,
-		email: res.Email,	
-	})
+	return e.JSON(http.StatusOK, userMapper(res))
 
 }
 
@@ -108,11 +99,7 @@ func (c *UserController) Update(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 
-	return e.JSON(http.StatusOK, APIUserResponse{
-		id: res.UserId,
-		name: res.Name,
-		email: res.Email,	
-	})
+	return e.JSON(http.StatusOK, userMapper(res))
 
 }
 
@@ -135,11 +122,7 @@ func (c *UserController) AuthUpdate(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 
-	return e.JSON(http.StatusOK, APIUserResponse{
-		id: res.UserId,
-		name: res.Name,
-		email: res.Email,	
-	})
+	return e.JSON(http.StatusOK, userMapper(res))
 
 }
 
@@ -154,4 +137,12 @@ func (c *UserController) AuthDelete(e echo.Context) error {
 	}
 
 	return e.String(http.StatusNoContent, "successfully deleted")
+}
+
+func userMapper(user *domain.APIUser) echo.Map{
+	return echo.Map{
+		"id": user.UserId,
+		"name": user.Name,
+		"email": user.Email,
+	}
 }

@@ -44,7 +44,7 @@ func (c *SignUpController) Save(e echo.Context) error {
 }
 
 func (c *SignUpController) SignUp(e echo.Context) error {
-	mailCode := e.FormValue("code")
+	mailCode := e.FormValue("mailCode")
 
 	user, err := c.signUpUsecase.SignUp(mailCode)
 	if err != nil{
