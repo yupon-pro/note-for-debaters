@@ -31,6 +31,7 @@ func (rep *UserRepositoryInfrastructure) ReadAuth(email string) (*domain.AuthUse
 	return authUser, nil
 }
 
+// [Notion]
 // Why are models passed to model and first different? 
 // Refer to https://gorm.io/docs/advanced_query.html#Smart-Select-Fields
 

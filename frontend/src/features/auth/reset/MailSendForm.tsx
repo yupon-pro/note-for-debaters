@@ -2,9 +2,9 @@
 
 import { useFormState } from "react-dom";
 import { IoKeyOutline } from "react-icons/io5";
-import { verifyEmailFormAction } from "../libs/formActions";
-import AuthForm from "../common/AuthForm";
-import FormSubmitButton from "../common/FormSubmitButton";
+import { verifyEmailFormAction } from "../libs/authFormActions";
+import AuthForm from "../../common/components/AuthForm";
+import FormSubmitButton from "../../common/components/FormSubmitButton";
 import { Text } from "@chakra-ui/react";
 
 const initialValue = {

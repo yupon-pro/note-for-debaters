@@ -17,10 +17,17 @@ export const authConfig = {
       }
       return true;
     },
-    async jwt({ token, user }){
+    async jwt({ token, user, trigger, session }){
       if(user && user.id ){
         token.id = user.id;
-        token.accessToken = user.accessToken
+        token.accessToken = user.accessToken;
+      }
+      if(trigger === "update" && session) {
+        token = {...token, user: session};
+        return token;
+        // [Notion]
+        // Why and how is trigger used?
+        // Refer to https://medium.com/@youngjun625/next-js14-nextauth-v5-2-session-update-b977cb6afd47
       }
       return token;
     },

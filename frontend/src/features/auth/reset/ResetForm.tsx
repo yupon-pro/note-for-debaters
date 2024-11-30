@@ -1,9 +1,9 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { resetPasswordFormAction } from "../libs/formActions";
-import AuthForm from "../common/AuthForm";
-import FormSubmitButton from "../common/FormSubmitButton";
+import { resetPasswordFormAction } from "../libs/authFormActions";
+import AuthForm from "../../common/components/AuthForm";
+import FormSubmitButton from "../../common/components/FormSubmitButton";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { Text } from "@chakra-ui/react";
 

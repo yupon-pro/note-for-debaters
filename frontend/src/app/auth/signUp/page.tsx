@@ -1,6 +1,8 @@
 import dynamic from "next/dynamic";
 
-// https://snyk.io/advisor/npm-package/react-form-stepper
+// [Notion]
+// Why should I use dynamic import like this?
+// Refer to https://snyk.io/advisor/npm-package/react-form-stepper
 const StepperComponent = dynamic(() => import("@/features/auth/singUp/components/SignUpSteps"), {
   ssr: false,
 });

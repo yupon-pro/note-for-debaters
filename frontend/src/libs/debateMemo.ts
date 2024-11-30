@@ -5,15 +5,14 @@ import {  PostMemo, UpdateMemo } from "@/types/memoType";
 import { FetchWithAuth } from "@/utils/fetchClass";
 import { isMemos } from "@/utils/memoTypeGuard";
 
-export async function getMemos(NoteId: string){
-  const uri = `${process.env.SERVER_URI}/memo`;
+export async function getMemos(noteId: string){
+  const uri = `${process.env.SERVER_URI}/memo/all/${noteId}`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
 
   const init = {
     uri,
     accessToken,
-    body: { NoteId },
     tag: ["memo"]
   }
 
@@ -29,7 +28,7 @@ export async function getMemos(NoteId: string){
 }
 
 export async function postMemo(memo: PostMemo){
-  const uri = `${process.env.SERVER_URI}/memo/`;
+  const uri = `${process.env.SERVER_URI}/memo`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
 
@@ -52,7 +51,7 @@ export async function postMemo(memo: PostMemo){
 }
 
 export async function updateMemo(memo: UpdateMemo){
-  const uri = `${process.env.SERVER_URI}/memo/${memo.serverMemoId}`;
+  const uri = `${process.env.SERVER_URI}/memo`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
 

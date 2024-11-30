@@ -68,8 +68,9 @@ func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (userI
 	return userInfo, nil
 }
 
-// What is clause.OnConflict? Refer to
-// https://stackoverflow.com/questions/39333102/how-to-create-or-update-a-record-with-gorm
+// [Notion]
+// What is clause.OnConflict? 
+// Refer to https://stackoverflow.com/questions/39333102/how-to-create-or-update-a-record-with-gorm
 
 func (rep *TmpUserRepositoryInfrastructure) Delete(mailCode string) error {
 	result := rep.db.Client.Where("mail_code = ?", mailCode).Delete(&domain.TmpUser{})

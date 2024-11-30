@@ -2,11 +2,11 @@
 
 import { VStack } from "@chakra-ui/react"
 import { useFormState } from "react-dom"
-import { signInFormAction, } from "../libs/formActions"
+import { signInFormAction, } from "../libs/authFormActions"
 import { CiMail } from "react-icons/ci"
-import AuthForm from "../common/AuthForm"
+import AuthForm from "../../common/components/AuthForm"
 import { RiLockPasswordLine } from "react-icons/ri"
-import FormSubmitButton from "../common/FormSubmitButton"
+import FormSubmitButton from "../../common/components/FormSubmitButton"
 
 const initialValues = {
   errors: {

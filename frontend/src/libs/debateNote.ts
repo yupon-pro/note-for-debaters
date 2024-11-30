@@ -5,7 +5,7 @@ import { PostNote, UpdateNote } from "@/types/noteType";
 import { FetchWithAuth } from "@/utils/fetchClass";
 import { isNote, isNotes } from "@/utils/noteTypeGuard";
 
-export async function getNote(id: string){
+export async function getNote(id: number){
   const uri = `${process.env.SERVER_URI}/note/${id}`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");

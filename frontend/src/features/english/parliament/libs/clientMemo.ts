@@ -2,8 +2,8 @@ import { deleteMemo, getMemos, postMemo, updateMemo } from "@/libs/debateMemo";
 import {  PostMemo, UpdateMemo } from "@/types/memoType";
 
 
-export async function getMemosInNote(NoteId: string){
-  const memos = await getMemos(NoteId);
+export async function getMemosInNote(noteId: string){
+  const memos = await getMemos(noteId);
 
   const memoData = memos.map((memo) => {
     const memoProps = {

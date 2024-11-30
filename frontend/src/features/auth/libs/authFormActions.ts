@@ -1,7 +1,7 @@
 "use server";
 
 import { signIn } from "@/config/auth";
-import { MailCodeState, MailInputState, ResetPwdState, SignInState, SignUpState } from "../types/formTypes";
+import { MailCodeState, MailInputState, ResetPwdState, SignInState, SignUpState } from "../types/authFormTypes";
 import { AuthError } from "next-auth";
 import { EmailScheme, ResetPwdScheme, SignInScheme, SignUpScheme } from "../schemes/formSchemes";
 import { authenticateUser, deleteResetToken, registerResetToken, registerTentativeUser, registerUser,  resetPasswordDirectly, } from "@/libs/auth";

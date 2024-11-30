@@ -5,24 +5,31 @@ import { getMemosInNote, } from "@/features/english/parliament/libs/clientMemo";
 
 // this component must be sever component because it call function to fetch resources to server.
 
-export default async function Parliamentary(){
+export default async function Parliamentary({
+    params
+  }: {
+    params?: {
+      id: string
+    }
+  }){
   let defaultNote;
   let defaultMemo;
 
   const session = await auth();
 
   if(session?.user){
-    const latestNote = await getNoteWithCommand("latest");
+    const id = params?.id ? Number(params.id) : null;
+    const note = (id && !Number.isNaN(id)) ? await getNoteWithCommand("single", id) : await getNoteWithCommand("latest")
 
-    if(latestNote && !Array.isArray(latestNote)){ 
+    if(note && !Array.isArray(note)){ 
       defaultNote = {
-        noteId: latestNote.noteId,
-        title: latestNote.title,
-        script: latestNote.script,
-        table: latestNote.table,
+        noteId: note.noteId,
+        title: note.title,
+        script: note.script,
+        table: note.table,
       };
 
-      const memos = await getMemosInNote(latestNote.noteId);
+      const memos = await getMemosInNote(note.noteId);
 
       defaultMemo = memos;
     }

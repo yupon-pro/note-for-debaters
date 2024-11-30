@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/config/auth";
+import { auth, signOut } from "@/config/auth";
 import { AuthUser, AuthUserWithToken, SignInData,} from "@/types/authType";
 import { isResetPwdInfo, isSignInData, isTentativeUserInfo, isUser, isUserWithToken } from "@/utils/authTypeGuard";
 import { FetchWithAuth } from "@/utils/fetchClass";
@@ -34,6 +34,11 @@ export async function authenticate(signInData: SignInData): Promise<AuthUserWith
   }catch(error){
     throw error;
   }
+}
+
+// sign out
+export async function signOutAction(){
+  await signOut();
 }
 
 // sign up actions
@@ -212,15 +217,20 @@ export async function deleteResetToken(token: string){
 }
 
 // Actions needed to be authorized
-export async function patchUser(name: string, password: string): Promise<AuthUser> {
+export async function patchUser(name?: string, password?: string): Promise<AuthUser> {
   const uri = `${process.env.SERVER_URI}/user/auth/`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to Get Access Token");
 
+  const body: {[key: string]: string} | undefined = (name && password) ? {name, password} 
+    : name ? { name } 
+    : password ? { password } 
+    : undefined
+
   const init = {
     uri,
     accessToken,
-    body: { name, password }
+    body
   }
 
   try{

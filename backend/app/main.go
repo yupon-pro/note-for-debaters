@@ -42,6 +42,10 @@ func main() {
 	noteUsecase := usecase.NewNoteUsecase(noteRepository)
 	noteController := interfaces.NewNoteController(noteUsecase)
 
+	memoRepository := infrastructure.NewMemoRepositoryInfrastructure(mydb)
+	memoUsecase := usecase.NewMemoUsecase(memoRepository)
+	memoController := interfaces.NewMemoController(memoUsecase)
+
 	userRepository := infrastructure.NewUserRepositoryInfrastructure(mydb)
 	userUsecase := usecase.NewUserUsecase(userRepository)
 	userController := interfaces.NewUserController(userUsecase)
@@ -54,7 +58,13 @@ func main() {
 	resetPwdUsecase := usecase.NewResetPwdUsecase(resetPwdRepository)
 	resetPwdController := interfaces.NewResetPwdController(resetPwdUsecase)
 
-	controllers := interfaces.NewControllers(noteController, userController, signUpController, resetPwdController)
+	controllers := interfaces.NewControllers(
+		noteController, 
+		memoController,
+		userController, 
+		signUpController, 
+		resetPwdController,
+	)
 	controllers.Mount(e)
 
 	e.GET("/", func(c echo.Context)error{return c.String(http.StatusOK, "hello")})
