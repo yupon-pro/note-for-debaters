@@ -11,18 +11,18 @@ import (
 
 
 type SignUpController struct {
-	signUpUsecase service.SignUpUsecase
+	signUpService service.SignUpService
 }
 
-func NewSignUpController(signUpUsecase service.SignUpUsecase) *SignUpController {
+func NewSignUpController(signUpService service.SignUpService) *SignUpController {
 	return &SignUpController{
-		signUpUsecase: signUpUsecase,
+		signUpService: signUpService,
 	}
 }
 
 func (c *SignUpController) Mount(group *echo.Group) {
-	group.POST("/tentative_user", c.Save)
-	group.POST("/user", c.SignUp)
+	group.POST("/tentative_user", c.Save) // checked, 2024/12/01
+	group.POST("/user", c.SignUp) // checked, 2024/12/01
 }
 
 func (c *SignUpController) Save(e echo.Context) error {
@@ -32,7 +32,7 @@ func (c *SignUpController) Save(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	res, err := c.signUpUsecase.SaveTmpUser(&req)
+	res, err := c.signUpService.SaveTmpUser(&req)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
@@ -47,7 +47,7 @@ func (c *SignUpController) Save(e echo.Context) error {
 func (c *SignUpController) SignUp(e echo.Context) error {
 	mailCode := e.FormValue("mailCode")
 
-	user, err := c.signUpUsecase.SignUp(mailCode)
+	user, err := c.signUpService.SignUp(mailCode)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
@@ -57,7 +57,7 @@ func (c *SignUpController) SignUp(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	return e.JSON(http.StatusOK, echo.Map{
+	return e.JSON(http.StatusCreated, echo.Map{
 		"accessToken": t,
 		"user": map[string]string{
 			"id": strconv.Itoa(user.UserId),

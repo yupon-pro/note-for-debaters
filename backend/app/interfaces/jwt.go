@@ -68,7 +68,7 @@ func ExtractUseInfoFromToken(userToken *jwt.Token) (UserInToken, error) {
 		claims.UserId,
 		claims.Email,
 	}
-	fmt.Println(uToken)
+
 	return uToken, nil
 }
 

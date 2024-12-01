@@ -28,7 +28,7 @@ export async function signInFormAction(prevState: SignInState, formData: FormDat
   const { email, password } = safeFields.data;
 
   try{
-    await signIn("signIn", { email, password });
+    await signIn("SignIn", { email, password });
   }catch(error){
     const errors = {
       message: 
@@ -115,11 +115,13 @@ export async function verifyMailCodeFormAction(prevState: MailCodeState, formDat
     const errors = {
       status: "Failure",
       message: 
-        error instanceof AuthError
-        ? error.type === "CredentialsSignin"
-          ? "invalid Credentials"
-          : "Something went wrong."
-        : "An unknown error occurred"
+        error instanceof AuthError 
+        ? error.type === "CredentialsSignin" 
+          ? "invalid Credentials" 
+          : "Something went wrong concerning credential" 
+        : error instanceof Error  
+          ? error.message 
+          : "An unknown error occurred"
       } as const;
     return errors
   }
@@ -184,7 +186,7 @@ export async function resetPasswordFormAction(
 
   try{
     const signInData = await resetPasswordDirectly(userId, password);
-    await signIn("signIn", { 
+    await signIn("SignIn", { 
       email: signInData.email, 
       password: signInData.password,
     });

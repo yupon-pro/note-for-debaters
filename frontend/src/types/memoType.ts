@@ -3,7 +3,7 @@ import { AuthUser } from "./authType";
 type BaseMemoData = {
   clientMemoId: string;
   serverMemoId?: string;
-  noteId: string;
+  noteId?: string;
   content: string;
 }
 

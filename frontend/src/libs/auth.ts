@@ -1,7 +1,7 @@
 "use server";
 
 import { auth, signOut } from "@/config/auth";
-import { AuthUser, AuthUserWithToken, SignInData,} from "@/types/authType";
+import { AuthUser, AuthUserWithToken, SignInData, SignUpData,} from "@/types/authType";
 import { isResetPwdInfo, isSignInData, isTentativeUserInfo, isUser, isUserWithToken } from "@/utils/authTypeGuard";
 import { FetchWithAuth } from "@/utils/fetchClass";
 
@@ -42,7 +42,7 @@ export async function signOutAction(){
 }
 
 // sign up actions
-export async function registerTentativeUser(signUpData: SignInData, mailCode: string){
+export async function registerTentativeUser(signUpData: SignUpData, mailCode: string){
   // [Notion]
   // This function assume that the password won't be encrypted in server api.
   // The password is supposed to be encrypted when the sign up process successes.
@@ -82,7 +82,7 @@ export async function registerUser(mailCode: string): Promise<AuthUserWithToken>
   // 2. delete the tentative user.
   // 3. register the user info to the stable user table in back end.
   const uri = `${process.env.SERVER_URI}/sign_up/user`;
-
+  console.log(uri);
   try{
     const res = await fetch(uri, {
       method: "POST",

@@ -19,9 +19,9 @@ func NewResetPwdController(resetPwdUsecase usecase.ResetPwdUsecase) *ResetPwdCon
 }
 
 func (c *ResetPwdController) Mount(group *echo.Group) {
-	group.POST("", c.Create)
-	group.GET("/:token", c.Show)
-	group.DELETE("/:token", c.Delete)
+	group.POST("", c.Create) // checked, 2024/12/01
+	group.GET("/:token", c.Show) // checked, 2024/12/01
+	group.DELETE("/:token", c.Delete) // checked, 2024/12/01
 }
 
 func (c *ResetPwdController) Create(e echo.Context) error {

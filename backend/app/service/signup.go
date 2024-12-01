@@ -20,30 +20,30 @@ type SaveTmpUserInput struct{
   Password string `json:"password" form:"password"`
 }
 
-type SignUpUsecase interface{
+type SignUpService interface{
 	SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error)
 	SignUp(mailCode string) (*domain.APIUser, error)
 }
 
-type signUpUsecase struct{
+type signUpService struct{
 	tmpUserRepository domain.TmpUserRepository
 	userRepository domain.UserRepository
 	transaction infrastructure.Transaction
 }
 
-func NewSignUpUsecase (
+func NewSignUpService (
 	tmpUserRepository domain.TmpUserRepository, 
 	userRepository domain.UserRepository,
 	transaction infrastructure.Transaction,
-	) SignUpUsecase{
-	return &signUpUsecase{ 
+	) SignUpService{
+	return &signUpService{ 
 		tmpUserRepository: tmpUserRepository,
 		userRepository: userRepository,
 		transaction: transaction,
 	}
 }
 
-func (s *signUpUsecase) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error) {
+func (s *signUpService) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error) {
 	tmpUser := &domain.TmpUser{
 		MailCode: input.MailCode,
 		Name: input.Name,
@@ -61,7 +61,7 @@ func (s *signUpUsecase) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, 
 	return userInfo, nil
 }
 
-func (s *signUpUsecase) SignUp(mailCode string) (*domain.APIUser, error) {
+func (s *signUpService) SignUp(mailCode string) (*domain.APIUser, error) {
 	s.transaction.Begin()
 	defer func() {
 		if r := recover(); r != nil{

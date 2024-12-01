@@ -13,9 +13,10 @@ export const {
 	...authConfig,
 	providers: [
 		Credentials({
-			name: "SignIn",
+			id: "SignIn",
 			async authorize(credentials) {
 				// this value presume that it is not form data but normal object.
+				console.log(isLoginData(credentials))
 				if (isLoginData(credentials)) {
 					const { email, password } = credentials;
           
@@ -36,7 +37,7 @@ export const {
 			},
 		}),
 		Credentials({
-			name: "SignUp",
+			id: "SignUp",
 			async authorize(credentials) {
 				// this value presume that it is not form data but normal object.
 				if (isUserWithToken(credentials)) {
@@ -50,3 +51,6 @@ export const {
 		}),
 	],
 });
+// [Notion]
+// To distinguish the process, it is appropriate to user id, not name.
+// Refer to https://www.reddit.com/r/nextjs/comments/ujilwd/tutorial_for_adding_a_nextauth_sign_up_page/?rdt=64694

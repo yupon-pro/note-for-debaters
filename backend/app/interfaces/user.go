@@ -22,11 +22,11 @@ func NewUserController(userUsecase usecase.UserUsecase) *UserController {
 }
 
 func (c *UserController) Mount(group *echo.Group, jwtMiddleware echo.MiddlewareFunc) {
-	group.POST("/signin", c.Signin)
-	group.GET("/:email", c.Show)
-	group.PATCH("", c.Update)
-	group.PATCH("/auth", c.AuthUpdate, jwtMiddleware)
-	group.DELETE("/auth", c.AuthDelete, jwtMiddleware)
+	group.POST("/signin", c.Signin) // checked, 2024/12/01 
+	group.GET("/:email", c.Show) // checked, 2024/12/01 
+	group.PATCH("", c.Update) // checked, 2024/12/01
+	group.PATCH("/auth", c.AuthUpdate, jwtMiddleware) // checked, 2024/12/01
+	group.DELETE("/auth", c.AuthDelete, jwtMiddleware) // checked, 2024/12/01
 }
 
 func (c *UserController) Signin(e echo.Context) error {
@@ -35,7 +35,7 @@ func (c *UserController) Signin(e echo.Context) error {
 		Password string `json:"password" form:"password"`
 	}{}
 
-	if err := e.Bind(req); err != nil{
+	if err := e.Bind(&req); err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
@@ -46,6 +46,7 @@ func (c *UserController) Signin(e echo.Context) error {
 
 	hashPwd := user.Password
 	reqPwd := req.Password
+
 	if err := utils.ComparePwd(hashPwd, reqPwd); err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
@@ -79,8 +80,8 @@ func (c *UserController) Show(e echo.Context) error {
 
 func (c *UserController) Update(e echo.Context) error {
 	req := &struct{
-		UserId string `json:"user_id"`
-		Password string `json:"password"`
+		UserId string `json:"id" form:"id"`
+		Password string `json:"password" form:"password"`
 	}{}
 
 	if err := e.Bind(req); err != nil{
@@ -91,9 +92,15 @@ func (c *UserController) Update(e echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
+
+	hashPwd, err := utils.EncryptPwd(req.Password)
+	if err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
 	res, err := c.userUsecase.UpdateUser(&usecase.UpdateUserInput{
 		UserId: userId,
-		CreateUserInput: usecase.CreateUserInput{Password: req.Password},
+		CreateUserInput: usecase.CreateUserInput{Password: hashPwd},
 	})
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
@@ -116,6 +123,12 @@ func (c *UserController) AuthUpdate(e echo.Context) error {
 	}
 
 	req.UserId = uInfo.UserId
+
+	hashPwd, err := utils.EncryptPwd(req.Password)
+	if err != nil{
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	req.Password = hashPwd
 	
 	res, err := c.userUsecase.UpdateUser(&req)
 	if err != nil{

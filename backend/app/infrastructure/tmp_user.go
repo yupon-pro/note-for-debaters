@@ -64,7 +64,6 @@ func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (*doma
 		Error
 
 	if err != nil {
-		fmt.Println(err)
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 	return userInfo, nil

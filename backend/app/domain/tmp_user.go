@@ -21,8 +21,8 @@ type UserInfo struct{
 }
 
 func (n TmpUser) Validate() error {
-	if n.Name == "" || n.Email == "" || n.Password == "" {
-		return fmt.Errorf("必要なデータを入力してください")
+	if n.MailCode == "" || n.Name == "" || n.Email == "" || n.Password == "" {
+		return fmt.Errorf("please enter the necessary info")
 	}
 
 	return nil

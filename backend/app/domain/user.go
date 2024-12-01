@@ -20,11 +20,6 @@ type APIUser struct{
 	Email string `gorm:"column:email"`
 }
 
-type AuthUser struct{
-	APIUser
-	Password string `gorm:"column:password"`
-}
-
 func (n User) Validate() error {
 	if n.Name == "" || n.Email == "" || n.Password == "" {
 		return fmt.Errorf("必要なデータを入力してください")
@@ -35,7 +30,7 @@ func (n User) Validate() error {
 
 type UserRepository interface{
 	Read(email string) (*APIUser, error)
-	ReadAuth(email string) (*AuthUser, error)
+	ReadAuth(email string) (*User, error)
 	Create(user *User) (*APIUser, error)
 	Update(user *User) (*APIUser, error)
 	Delete(userId int) error

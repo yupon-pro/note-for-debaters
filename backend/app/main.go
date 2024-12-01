@@ -51,8 +51,8 @@ func main() {
 	userController := interfaces.NewUserController(userUsecase)
 
 	tmpUserRepository := infrastructure.NewTmpUserRepositoryInfrastructure(mydb)
-	signUpUsecase := service.NewSignUpUsecase(tmpUserRepository, userRepository, tx)
-	signUpController := interfaces.NewSignUpController(signUpUsecase)
+	signUpService := service.NewSignUpService(tmpUserRepository, userRepository, tx)
+	signUpController := interfaces.NewSignUpController(signUpService)
 
 	resetPwdRepository := infrastructure.NewResetPwdRepositoryInfrastructure(mydb)
 	resetPwdUsecase := usecase.NewResetPwdUsecase(resetPwdRepository)
@@ -69,6 +69,6 @@ func main() {
 
 	e.GET("/", func(c echo.Context)error{return c.String(http.StatusOK, "hello")})
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":8082"))
 
 }

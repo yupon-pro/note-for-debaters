@@ -16,19 +16,19 @@ func NewUserRepositoryInfrastructure(db *MyDB) domain.UserRepository {
 }
 
 func (rep *UserRepositoryInfrastructure) Read(email string) (*domain.APIUser, error) {
-	var apiUser *domain.APIUser
+	apiUser := &domain.APIUser{}
 	if err := rep.db.Client.Model(&domain.User{}).Where("email = ?", email).First(apiUser).Error; err != nil {
 		return nil, fmt.Errorf("failed to read user: %w", err)
 	}
 	return apiUser, nil
 }
 
-func (rep *UserRepositoryInfrastructure) ReadAuth(email string) (*domain.AuthUser, error) {
-	var authUser *domain.AuthUser
-	if err := rep.db.Client.Model(&domain.User{}).Where("email = ?", email).First(authUser).Error; err != nil {
+func (rep *UserRepositoryInfrastructure) ReadAuth(email string) (*domain.User, error) {
+	user := &domain.User{}
+	if err := rep.db.Client.Model(&domain.User{}).Where("email = ?", email).First(user).Error; err != nil {
 		return nil, fmt.Errorf("failed to read user: %w", err)
 	}
-	return authUser, nil
+	return user, nil
 }
 
 // [Notion]
@@ -63,11 +63,19 @@ func (rep *UserRepositoryInfrastructure) Update(user *domain.User) (*domain.APIU
 		{Name: "name"},
 	}
 	result := rep.db.Client.Model(&domain.User{}).Clauses(clause.Returning{Columns: res}).Where("user_id = ?", user.UserId).Updates(user).Scan(apiUser)
+	if result.RowsAffected == 0{
+		return nil, fmt.Errorf("there is no target user")
+	}
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to update user: %w", result.Error)
 	}
 	return apiUser, nil
 }
+
+// [Notion]
+// Even if there is no user that matches to the request, the update method doesn't emit error.
+// So, it is necessary to check the influence for rows after the method calling.
+// Refer to https://gorm.io/docs/update.html
 
 // [Notion]
 // What is Clauses and columns? 

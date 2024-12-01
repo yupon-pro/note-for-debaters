@@ -1,10 +1,10 @@
 "use client";
 
 import { IoKeyOutline } from "react-icons/io5";
-import AuthForm from "../../../common/components/AuthForm";
-import FormSubmitButton from "../../../common/components/FormSubmitButton";
+import AuthForm from "../../common/components/AuthForm";
+import FormSubmitButton from "../../common/components/FormSubmitButton";
 import { useFormState } from "react-dom";
-import { verifyMailCodeFormAction } from "../../libs/authFormActions";
+import { verifyMailCodeFormAction } from "../libs/authFormActions";
 import { Text } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";

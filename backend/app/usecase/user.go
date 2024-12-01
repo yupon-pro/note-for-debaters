@@ -1,12 +1,13 @@
 package usecase
 
 import (
+
 	"github.com/yupon-pro/note-for-debater/domain"
 )
 
 type UserUsecase interface{
 	ReadAPIUser(email string) (*domain.APIUser, error)
-	ReadAuthUser(email string) (*domain.AuthUser, error)
+	ReadAuthUser(email string) (*domain.User, error)
 	UpdateUser(input *UpdateUserInput) (*domain.APIUser, error)
 	DeleteUser(userId int) error	
 }
@@ -39,7 +40,7 @@ func (n *userUsecase) ReadAPIUser(email string) (*domain.APIUser, error){
 	return user, nil
 }
 
-func (n *userUsecase) ReadAuthUser(email string) (*domain.AuthUser, error){
+func (n *userUsecase) ReadAuthUser(email string) (*domain.User, error){
 	user, err := n.userRepository.ReadAuth(email)
 	if err != nil{
 		return nil, err
@@ -54,6 +55,7 @@ func (n *userUsecase) UpdateUser(input *UpdateUserInput) (*domain.APIUser, error
 		Email: input.Email,
 		Password: input.Password,
 	}
+
 	apiUser, err := n.userRepository.Update(user);
 	if  err != nil{
 		return nil, err
