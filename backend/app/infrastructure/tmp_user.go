@@ -37,7 +37,7 @@ func (rep *TmpUserRepositoryInfrastructure) Read(mailCode string) (*domain.UserI
 	return userInfo, nil
 }
 
-func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser *domain.TmpUser) (*domain.UserInfo, error) {
+func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser domain.TmpUser) (*domain.UserInfo, error) {
 	hashPwd, err := utils.EncryptPwd(tmpUser.Password)
 	if err != nil{
 		return nil, fmt.Errorf("failed to hash password: %w", err)

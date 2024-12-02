@@ -22,7 +22,7 @@ type APIUser struct{
 
 func (n User) Validate() error {
 	if n.Name == "" || n.Email == "" || n.Password == "" {
-		return fmt.Errorf("必要なデータを入力してください")
+		return fmt.Errorf("please input the necessary values")
 	}
 
 	return nil
@@ -31,7 +31,7 @@ func (n User) Validate() error {
 type UserRepository interface{
 	Read(email string) (*APIUser, error)
 	ReadAuth(email string) (*User, error)
-	Create(user *User) (*APIUser, error)
-	Update(user *User) (*APIUser, error)
+	Create(user User) (*APIUser, error)
+	Update(user User) (*APIUser, error)
 	Delete(userId int) error
 }

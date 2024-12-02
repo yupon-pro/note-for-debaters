@@ -17,9 +17,9 @@ func NewResetPwdRepositoryInfrastructure(db *MyDB) domain.ResetPwdRepository {
 	return &ResetPwdRepositoryInfrastructure{db}
 }
 
-func (rep *ResetPwdRepositoryInfrastructure) Read(token string) (*domain.APIResetPwd, error) {
-	var resetPwd domain.ResetPwd
-	if err := rep.db.Client.Where("token = ?", token).First(&resetPwd).Error; err != nil {
+func (rep *ResetPwdRepositoryInfrastructure) Read(token string) (*domain.ResetPwd, error) {
+	resetPwd := &domain.ResetPwd{}
+	if err := rep.db.Client.Where("token = ?", token).First(resetPwd).Error; err != nil {
 		return nil, fmt.Errorf("failed to read user: %w", err)
 	}
 	
@@ -28,38 +28,28 @@ func (rep *ResetPwdRepositoryInfrastructure) Read(token string) (*domain.APIRese
 		return nil, fmt.Errorf("the code is expired")
 	}
 
-	apiResetPwd := &domain.APIResetPwd{
-		Token: resetPwd.Token,
-		Email: resetPwd.Email,
-		UserId: resetPwd.UserId,
-	}
-
-	return apiResetPwd, nil
+	return resetPwd, nil
 }
 
-func (rep *ResetPwdRepositoryInfrastructure) Save(info *domain.ResetPwd) (*domain.APIResetPwd, error) {
-	apiResetPwd := &domain.APIResetPwd{}
+func (rep *ResetPwdRepositoryInfrastructure) Save(info domain.ResetPwd) (*domain.ResetPwd, error) {
+	resetPwd := &domain.ResetPwd{}
 
 	result := rep.db.Client.
-		Model(&domain.ResetPwd{}).
+		Model(resetPwd).
 		Clauses(
 			clause.OnConflict{
 				Columns: []clause.Column{{ Name: "email" }},
-				DoUpdates: clause.AssignmentColumns([]string{"token", "user_id", "updated_at"}),
-			}, 
-			clause.Returning{Columns: []clause.Column{
-				{Name: "token"},
-				{Name: "email"},
-				{Name: "user_id"},
-			}},
+				DoUpdates: clause.AssignmentColumns([]string{"token", "updated_at"}),
+			},
+			clause.Returning{},
 		).
-		Create(info).
-		Scan(apiResetPwd)
+		Create(&info).
+		Scan(resetPwd)
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to create user: %w", result.Error)
 	}
-	return apiResetPwd, nil
+	return resetPwd, nil
 }
 
 func (rep *ResetPwdRepositoryInfrastructure) Delete(token string) error {

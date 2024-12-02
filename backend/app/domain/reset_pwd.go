@@ -13,22 +13,16 @@ type ResetPwd struct{
 	UpdatedAt time.Time `gorm:"auto_update_time; column:updated_at"`
 }
 
-type APIResetPwd struct{
-	Token string `gorm:"column:token"`
-	Email string `gorm:"column:email"`
-	UserId int `gorm:"column:user_id"`
-}
-
 func (n ResetPwd) Validate() error {
 	if n.Token == "" || n.Email == "" || n.UserId == 0 {
-		return fmt.Errorf("you miss the field value")
+		return fmt.Errorf("please input the necessary values")
 	}
 
 	return nil
 }
 
 type ResetPwdRepository interface{
-	Read(token string) (*APIResetPwd, error)
-	Save(info *ResetPwd) (*APIResetPwd, error)
+	Read(token string) (*ResetPwd, error)
+	Save(info ResetPwd) (*ResetPwd, error)
 	Delete(token string) error
 }

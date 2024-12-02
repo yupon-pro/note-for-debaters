@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	// "fmt"
@@ -7,12 +7,6 @@ import (
 	"github.com/yupon-pro/note-for-debater/infrastructure"
 )
 
-type CreateUserInput struct{
-	Name string
-  Email string
-  Password string
-}
-
 type SaveTmpUserInput struct{
 	MailCode string `json:"mailCode" form:"mailCode"`
 	Name string `json:"name" form:"name"`
@@ -20,31 +14,31 @@ type SaveTmpUserInput struct{
   Password string `json:"password" form:"password"`
 }
 
-type SignUpService interface{
-	SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error)
+type SignUpUsecase interface{
+	SaveTmpUser(input SaveTmpUserInput) (*domain.UserInfo, error)
 	SignUp(mailCode string) (*domain.APIUser, error)
 }
 
-type signUpService struct{
+type signUpUsecase struct{
 	tmpUserRepository domain.TmpUserRepository
 	userRepository domain.UserRepository
 	transaction infrastructure.Transaction
 }
 
-func NewSignUpService (
+func NewSignUpUsecase (
 	tmpUserRepository domain.TmpUserRepository, 
 	userRepository domain.UserRepository,
 	transaction infrastructure.Transaction,
-	) SignUpService{
-	return &signUpService{ 
+	) SignUpUsecase{
+	return &signUpUsecase{ 
 		tmpUserRepository: tmpUserRepository,
 		userRepository: userRepository,
 		transaction: transaction,
 	}
 }
 
-func (s *signUpService) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, error) {
-	tmpUser := &domain.TmpUser{
+func (s *signUpUsecase) SaveTmpUser(input SaveTmpUserInput) (*domain.UserInfo, error) {
+	tmpUser := domain.TmpUser{
 		MailCode: input.MailCode,
 		Name: input.Name,
 		Email: input.Email,
@@ -61,7 +55,7 @@ func (s *signUpService) SaveTmpUser(input *SaveTmpUserInput) (*domain.UserInfo, 
 	return userInfo, nil
 }
 
-func (s *signUpService) SignUp(mailCode string) (*domain.APIUser, error) {
+func (s *signUpUsecase) SignUp(mailCode string) (*domain.APIUser, error) {
 	s.transaction.Begin()
 	defer func() {
 		if r := recover(); r != nil{
@@ -75,7 +69,7 @@ func (s *signUpService) SignUp(mailCode string) (*domain.APIUser, error) {
 		return nil, err
 	}
 
-	user := &domain.User{
+	user := domain.User{
 		Name: userInfo.Name,
 		Email: userInfo.Email,
 		Password: userInfo.Password,

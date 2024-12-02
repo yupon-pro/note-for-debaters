@@ -35,14 +35,20 @@ func (rep *UserRepositoryInfrastructure) ReadAuth(email string) (*domain.User, e
 // Why are models passed to model and first different? 
 // Refer to https://gorm.io/docs/advanced_query.html#Smart-Select-Fields
 
-func (rep *UserRepositoryInfrastructure) Create(user *domain.User) (*domain.APIUser, error) {
+func (rep *UserRepositoryInfrastructure) Create(user domain.User) (*domain.APIUser, error) {
 	apiUser := &domain.APIUser{}
-	res := []clause.Column{
-		{Name: "user_id"},
-		{Name: "email"},
-		{Name: "name"},
-	}
-	result := rep.db.Client.Model(&domain.User{}).Clauses(clause.Returning{Columns: res}).Create(user).Scan(apiUser)
+	
+	result := rep.db.Client.
+		Model(&domain.User{}).
+		Clauses(
+			clause.Returning{Columns: []clause.Column{
+				{Name: "user_id"},
+				{Name: "email"},
+				{Name: "name"},
+		}}).
+		Create(user).
+		Scan(apiUser)
+
 	if result.Error != nil {
 		return nil, fmt.Errorf("failed to create user: %w", result.Error)
 	}
@@ -55,14 +61,20 @@ func (rep *UserRepositoryInfrastructure) Create(user *domain.User) (*domain.APIU
 // It is safe to secure the memory for variable by initializing the value or declaring the value without pointer.
 // Refer to https://www.digitalocean.com/community/conceptual-articles/understanding-pointers-in-go#nil-pointers
 
-func (rep *UserRepositoryInfrastructure) Update(user *domain.User) (*domain.APIUser, error) {
+func (rep *UserRepositoryInfrastructure) Update(user domain.User) (*domain.APIUser, error) {
 	apiUser := &domain.APIUser{}
-	res := []clause.Column{
-		{Name: "user_id"},
-		{Name: "email"},
-		{Name: "name"},
-	}
-	result := rep.db.Client.Model(&domain.User{}).Clauses(clause.Returning{Columns: res}).Where("user_id = ?", user.UserId).Updates(user).Scan(apiUser)
+	
+	result := rep.db.Client.
+		Model(&domain.User{}).
+		Clauses(clause.Returning{Columns: []clause.Column{
+			{Name: "user_id"},
+			{Name: "email"},
+			{Name: "name"},
+		}}).
+		Where("user_id = ?", user.UserId).
+		Updates(user).
+		Scan(apiUser)
+
 	if result.RowsAffected == 0{
 		return nil, fmt.Errorf("there is no target user")
 	}

@@ -98,10 +98,12 @@ func (c *UserController) Update(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	res, err := c.userUsecase.UpdateUser(&usecase.UpdateUserInput{
-		UserId: userId,
-		CreateUserInput: usecase.CreateUserInput{Password: hashPwd},
-	})
+	res, err := c.userUsecase.UpdateUser(
+		usecase.UpdateUserInput{
+			UserId: userId,
+			CreateUserInput: usecase.CreateUserInput{Password: hashPwd},
+		},
+	)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
@@ -130,7 +132,7 @@ func (c *UserController) AuthUpdate(e echo.Context) error {
 	}
 	req.Password = hashPwd
 	
-	res, err := c.userUsecase.UpdateUser(&req)
+	res, err := c.userUsecase.UpdateUser(req)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}

@@ -1,8 +1,8 @@
 package domain
 
 import (
+	"fmt"
 	"time"
-
 )
 
 
@@ -21,10 +21,23 @@ type Memo struct {
   UpdatedAt time.Time `gorm:"autoUpdateTime; column: updated_at"`
 }
 
+func (m *Memo) Validate() error{
+	if m.X == "" || m.Y == "" || m.Width == "" || m.Height == "" || m.ClientMemoId == "" {
+		return fmt.Errorf("please input the necessary values")
+	}
+	return nil
+}
+
 
 type MemoRepository interface{
-	ReadAll(noteId int) ([]Memo, error)
-	Create(memo *Memo) (*Memo, error)
-	Update(memo *Memo) (*Memo, error)
-	Delete(serverMemoId int) error
+	// ReadAll(noteId int) ([]Memo, error)
+	// [Notion]
+	// There is no need to implement read method 
+	// because the memos are always included by a note.
+	// So far, there has been no necessity to call memos without note info.
+	CreateBatch(memos []Memo) ([]Memo, error)
+	UpdateBatch(memos []Memo) ([]Memo, error)
+	DeleteByMemoId(serverMemoId int) error
+	DeleteByNoteId(memoId int) error
+	DeleteByUserId(userId int) error
 }

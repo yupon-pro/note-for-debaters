@@ -6,15 +6,15 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	"github.com/yupon-pro/note-for-debater/service"
+	"github.com/yupon-pro/note-for-debater/usecase"
 )
 
 
 type SignUpController struct {
-	signUpService service.SignUpService
+	signUpService usecase.SignUpUsecase
 }
 
-func NewSignUpController(signUpService service.SignUpService) *SignUpController {
+func NewSignUpController(signUpService usecase.SignUpUsecase) *SignUpController {
 	return &SignUpController{
 		signUpService: signUpService,
 	}
@@ -26,13 +26,13 @@ func (c *SignUpController) Mount(group *echo.Group) {
 }
 
 func (c *SignUpController) Save(e echo.Context) error {
-	var req service.SaveTmpUserInput
+	var req usecase.SaveTmpUserInput
 
 	if err := e.Bind(&req); err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	res, err := c.signUpService.SaveTmpUser(&req)
+	res, err := c.signUpService.SaveTmpUser(req)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}

@@ -14,19 +14,21 @@ type UpdateNote struct {
 
 
 type Note struct {
-	NoteId int `gorm:"primary_key; AUTO_INCREMENT; column: note_id"`
-  UserId int	`gorm:"column: user_id"`
-	User User `gorm:"foreignKey:user_id"`
-	Title string `gorm:"column: title; not null"`
-  Table string `gorm:"column: table; not null"`
-  Script string `gorm:"column: script"`
-	CreatedAt time.Time `gorm:"autoCreateTime; column: created_at"`
-  UpdatedAt time.Time `gorm:"autoUpdateTime; column: updated_at"`
+	NoteId    int       `gorm:"primary_key; AUTO_INCREMENT; column: note_id"`
+	UserId    int       `gorm:"column:user_id"`
+	User      User `gorm:"foreignKey:user_id"`
+	Title     string    `gorm:"column:title; not null"`
+	Table     string    `gorm:"column:table; not null"`
+	Script    string    `gorm:"column:script"`
+	Memos     []Memo    `gorm:"foreignKey:note_id"`
+	CreatedAt time.Time `gorm:"autoCreateTime; column:created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime; column:updated_at"`
 }
+
 
 func (n Note) Validate() error {
 	if n.Title == "" || n.Table == ""  {
-		return fmt.Errorf("必要なデータを入力してください")
+		return fmt.Errorf("please input the necessary values")
 	}
 
 	return nil
@@ -36,7 +38,8 @@ type NoteRepository interface{
 	Read(noteId int) (*Note, error)
 	ReadAll(userId int) ([]Note, error)
 	ReadLatest(userId int) (*Note, error)
-	Create(note *Note) (*Note, error)
-	Update(note *Note) (*Note, error)
-	Delete(noteId int) error
+	Create(note Note) (*Note, error)
+	Update(note Note) (*Note, error)
+	DeleteByNoteId(noteId int) error
+	DeleteByUserId(UserId int) error
 }

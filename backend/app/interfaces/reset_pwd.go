@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/usecase"
 )
 
@@ -31,16 +32,12 @@ func (c *ResetPwdController) Create(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
-	res, err := c.resetPwdUsecase.SaveResetPwd(&req)
+	res, err := c.resetPwdUsecase.SaveResetPwd(req)
 	if err != nil{
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 
-	return e.JSON(http.StatusCreated, echo.Map{
-		"token": res.Token,
-		"email": res.Email,
-		"id": res.UserId,
-	})
+	return e.JSON(http.StatusOK, resetMapper(res))
 
 }
 
@@ -52,11 +49,7 @@ func (c *ResetPwdController) Show(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)	
 	}
 	
-	return e.JSON(http.StatusOK, echo.Map{
-		"token": res.Token,
-		"email": res.Email,
-		"id": res.UserId,
-	})
+	return e.JSON(http.StatusOK, resetMapper(res))
 
 }
 
@@ -67,5 +60,12 @@ func (c *ResetPwdController) Delete(e echo.Context) error {
 	}
 	
 	return e.String(http.StatusNoContent, "successfully eliminated.")
+}
 
+func resetMapper(user *domain.ResetPwd) echo.Map{
+	return echo.Map{
+		"id": user.UserId,
+		"token": user.Token,
+		"email": user.Email,
+	}
 }

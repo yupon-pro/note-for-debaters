@@ -71,8 +71,8 @@ func (c *NoteController) ShowLatest(e echo.Context) error {
 }
 
 func (c *NoteController) Create(e echo.Context) error {
-	req := &usecase.CreateNoteInput{}
-	if err := e.Bind(req); err != nil {
+	req := usecase.CreateNoteInput{}
+	if err := e.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 
@@ -85,8 +85,8 @@ func (c *NoteController) Create(e echo.Context) error {
 }
 
 func (c *NoteController) Update(e echo.Context) error {
-	req := &usecase.UpdateNoteInput{}
-	if err := e.Bind(req); err != nil {
+	req := usecase.UpdateNoteInput{}
+	if err := e.Bind(&req); err != nil {
 		return err
 	}
 
@@ -112,6 +112,11 @@ func (c *NoteController) Delete(e echo.Context) error {
 }
 
 func noteMapper(note domain.Note) echo.Map {
+	memos := make([]echo.Map, len(note.Memos))
+	for i, memo := range note.Memos{
+		memos[i] = memoMapper(memo)
+	}
+
 	return echo.Map{
 		"noteId": note.NoteId,
 		"userId": note.UserId,
@@ -120,10 +125,32 @@ func noteMapper(note domain.Note) echo.Map {
 			"name": note.User.Name,
 			"email": note.User.Email,
 		},
+		"memos": memos,
 		"title": note.Title,
 		"script": note.Script,
 		"table": note.Table,
 		"updatedAt": note.UpdatedAt,
 		"createdAt": note.CreatedAt,
+	}
+}
+
+func memoMapper(memo domain.Memo) echo.Map{
+	return echo.Map{
+		"clientMemoId": memo.ClientMemoId,
+		"serverMemoId": memo.ServerMemoId,
+		"noteId": memo.NoteId,
+		"userId": memo.UserId,
+		"user": echo.Map{
+			"id": memo.User.UserId,
+			"name": memo.User.Name,
+			"email": memo.User.Email,
+		},
+		"x":memo.X,
+		"y":memo.Y,
+		"width":memo.Width,
+		"height":memo.Height,
+		"content":memo.Content,
+		"updatedAt": memo.UpdatedAt,
+		"createdAt": memo.CreatedAt,
 	}
 }

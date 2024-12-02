@@ -22,7 +22,7 @@ type UserInfo struct{
 
 func (n TmpUser) Validate() error {
 	if n.MailCode == "" || n.Name == "" || n.Email == "" || n.Password == "" {
-		return fmt.Errorf("please enter the necessary info")
+		return fmt.Errorf("please input the necessary values")
 	}
 
 	return nil
@@ -30,6 +30,6 @@ func (n TmpUser) Validate() error {
 
 type TmpUserRepository interface{
 	Read(mailCode string) (*UserInfo, error)
-	Save(tmpUser *TmpUser) (*UserInfo, error)
+	Save(tmpUser TmpUser) (*UserInfo, error)
 	Delete(mailCode string) error
 }

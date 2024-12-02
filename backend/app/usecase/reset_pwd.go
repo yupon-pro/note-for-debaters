@@ -7,8 +7,8 @@ import (
 )
 
 type ResetPwdUsecase interface{
-	ReadResetPwd(token string) (*domain.APIResetPwd, error)
-	SaveResetPwd(input *SaveResetPwdInput) (*domain.APIResetPwd, error)
+	ReadResetPwd(token string) (*domain.ResetPwd, error)
+	SaveResetPwd(input SaveResetPwdInput) (*domain.ResetPwd, error)
 	DeleteResetPwd(token string) error
 }
 
@@ -27,20 +27,20 @@ func NewResetPwdUsecase (resetPwdRepository domain.ResetPwdRepository) ResetPwdU
 }
 
 
-func (r *resetPwdUsecase) ReadResetPwd(token string) (*domain.APIResetPwd, error){
-	tmpUser, err := r.resetPwdRepository.Read(token)
+func (r *resetPwdUsecase) ReadResetPwd(token string) (*domain.ResetPwd, error){
+	resetPwd, err := r.resetPwdRepository.Read(token)
 	if err != nil{
 		return nil, err
 	}
-	return tmpUser, nil
+	return resetPwd, nil
 }
 
-func (r *resetPwdUsecase) SaveResetPwd(input *SaveResetPwdInput) (*domain.APIResetPwd, error) {
+func (r *resetPwdUsecase) SaveResetPwd(input SaveResetPwdInput) (*domain.ResetPwd, error) {
 	id, err := strconv.Atoi(input.UserId)
 	if err != nil{
 		return nil, err
 	}
-	resetPwd := &domain.ResetPwd{
+	resetPwd := domain.ResetPwd{
 		Token: input.Token,
 		UserId: id,
 		Email: input.Email,	
@@ -48,11 +48,11 @@ func (r *resetPwdUsecase) SaveResetPwd(input *SaveResetPwdInput) (*domain.APIRes
 	if err := resetPwd.Validate(); err != nil{
 		return nil, err
 	}
-	apiUser, err := r.resetPwdRepository.Save(resetPwd)
+	res, err := r.resetPwdRepository.Save(resetPwd)
 	if err != nil{
 		return nil, err
 	}
-	return apiUser, nil
+	return res, nil
 }
 
 func (r *resetPwdUsecase) DeleteResetPwd(token string) error {

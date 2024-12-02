@@ -11,7 +11,6 @@ import (
 	"github.com/yupon-pro/note-for-debater/domain"
 	"github.com/yupon-pro/note-for-debater/infrastructure"
 	"github.com/yupon-pro/note-for-debater/interfaces"
-	"github.com/yupon-pro/note-for-debater/service"
 	"github.com/yupon-pro/note-for-debater/usecase"
 )
 
@@ -38,21 +37,21 @@ func main() {
 
 	tx := infrastructure.NewTransactionManager(mydb.Client)
 
-	noteRepository := infrastructure.NewNoteRepositoryInfrastructure(mydb)
-	noteUsecase := usecase.NewNoteUsecase(noteRepository)
-	noteController := interfaces.NewNoteController(noteUsecase)
-
 	memoRepository := infrastructure.NewMemoRepositoryInfrastructure(mydb)
 	memoUsecase := usecase.NewMemoUsecase(memoRepository)
 	memoController := interfaces.NewMemoController(memoUsecase)
 
+	noteRepository := infrastructure.NewNoteRepositoryInfrastructure(mydb)
+	noteUsecase := usecase.NewNoteUsecase(noteRepository, memoRepository, tx)
+	noteController := interfaces.NewNoteController(noteUsecase)
+
 	userRepository := infrastructure.NewUserRepositoryInfrastructure(mydb)
-	userUsecase := usecase.NewUserUsecase(userRepository)
+	userUsecase := usecase.NewUserUsecase(userRepository, noteRepository, memoRepository, tx)
 	userController := interfaces.NewUserController(userUsecase)
 
 	tmpUserRepository := infrastructure.NewTmpUserRepositoryInfrastructure(mydb)
-	signUpService := service.NewSignUpService(tmpUserRepository, userRepository, tx)
-	signUpController := interfaces.NewSignUpController(signUpService)
+	signUpUsecase := usecase.NewSignUpUsecase(tmpUserRepository, userRepository, tx)
+	signUpController := interfaces.NewSignUpController(signUpUsecase)
 
 	resetPwdRepository := infrastructure.NewResetPwdRepositoryInfrastructure(mydb)
 	resetPwdUsecase := usecase.NewResetPwdUsecase(resetPwdRepository)

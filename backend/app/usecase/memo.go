@@ -7,7 +7,6 @@ import (
 type CreateMemoInput struct{
 	ClientMemoId string `json:"clientMemoId" form:"clientMemoId"`
   UserId int `json:"userId" form:"userId"`
-	NoteId int `json:"noteId" form:"noteId"`
 	X string `json:"x" form:"x"`
 	Y string `json:"y" form:"y"`
 	Width string `json:"width" form:"width"`
@@ -17,13 +16,11 @@ type CreateMemoInput struct{
 
 type UpdateMemoInput struct{
 	ServerMemoId int `json:"serverMemoId" form:"serverMemoId"`
+	NoteId int `json:"noteId" form:"noteId"`
 	CreateMemoInput
 }
 
 type MemoUsecase interface{
-	ReadAllMemos(noteId int) ([]domain.Memo, error)
-	CreateMemo(input *CreateMemoInput) (*domain.Memo, error)
-	UpdateMemo(input *UpdateMemoInput) (*domain.Memo, error)
 	DeleteMemo(serverMemoId int) error	
 }
 
@@ -36,51 +33,8 @@ func NewMemoUsecase (memoRepository domain.MemoRepository) MemoUsecase{
 }
 
 
-func (m *memoUsecase) ReadAllMemos(noteId int) ([]domain.Memo, error){
-	memos, err := m.memoRepository.ReadAll(noteId)
-	if err != nil{
-		return nil, err
-	}
-	return memos, nil
-}
-
-func (m *memoUsecase) CreateMemo(input *CreateMemoInput) (*domain.Memo, error) {
-	memo := &domain.Memo{
-		ClientMemoId: input.ClientMemoId,
-		UserId: input.UserId,
-		NoteId: input.NoteId,
-		X: input.X,
-		Y: input.Y,
-		Width: input.Width,
-		Height: input.Height,
-		Content: input.Content,
-	}
-	
-	resMemo, err := m.memoRepository.Create(memo)
-	if err != nil{
-		return nil, err
-	}
-	return resMemo, nil
-}
-
-func (m *memoUsecase) UpdateMemo(input *UpdateMemoInput) (*domain.Memo, error) {
-	memo := &domain.Memo{
-		ServerMemoId: input.ServerMemoId,
-		X: input.X,
-		Y: input.Y,
-		Width: input.Width,
-		Height: input.Height,
-		Content: input.Content,
-	}
-	resMemo, err := m.memoRepository.Update(memo)
-	if  err != nil{
-		return nil, err
-	}
-	return resMemo, nil
-}
-
 func (m *memoUsecase) DeleteMemo(serverMemoId int) error {
-	if err := m.memoRepository.Delete(serverMemoId); err != nil{
+	if err := m.memoRepository.DeleteByMemoId(serverMemoId); err != nil{
 		return err
 	}
 	return nil	
