@@ -77,6 +77,9 @@ func (n *noteUsecase) ReadLatestNote(userId int) (*domain.Note, error){
 }
 
 func (n *noteUsecase) CreateNote(input CreateNoteInput) (*domain.Note, error) {
+	// [Notation]
+	// At beginning, there is no note id, so memos must be saved after the note is saved.
+	// So, memos must be passed with note id after creating a note.
   n.transaction.Begin()
 	defer func() {
 		if r := recover(); r != nil{
@@ -98,8 +101,7 @@ func (n *noteUsecase) CreateNote(input CreateNoteInput) (*domain.Note, error) {
     n.transaction.Rollback()
 		return nil, err
 	}
-	// [Notion]
-	// At beginning, there is no note id, so memos must be saved after the note is saved.
+
 
   memos := make([]domain.Memo, len(input.Memos))
   for i, input := range input.Memos{
@@ -114,6 +116,7 @@ func (n *noteUsecase) CreateNote(input CreateNoteInput) (*domain.Note, error) {
       Content: input.Content,
     }
 		if err := memo.Validate(); err != nil{
+			n.transaction.Rollback()
 			return nil, err
 		}
     memos[i] = memo

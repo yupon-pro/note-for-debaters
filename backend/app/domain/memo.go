@@ -31,7 +31,7 @@ func (m *Memo) Validate() error{
 
 type MemoRepository interface{
 	// ReadAll(noteId int) ([]Memo, error)
-	// [Notion]
+	// [Notation]
 	// There is no need to implement read method 
 	// because the memos are always included by a note.
 	// So far, there has been no necessity to call memos without note info.
@@ -41,3 +41,12 @@ type MemoRepository interface{
 	DeleteByNoteId(memoId int) error
 	DeleteByUserId(userId int) error
 }
+
+// [Notation]
+// Make method receive value and return pointer thoroughly.
+// If a method receive pointer, the caller may think it uses side effect, 
+// meaning the value is changed in place where there is a caller.
+// If a value such as a large slice is too large to provide efficiently because the copying slice uses much memory, 
+// the pointer can be used and methods won't return any value.
+// Check if the memos are too large.
+// Pay attention to both process speed and memory usage.

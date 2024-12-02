@@ -46,7 +46,7 @@ func GetJWTToken(email string, userId int) (string, error) {
 }
 
 func UserInfoViaToken(e echo.Context) (UserInToken, error){
-	// [Notion] 
+	// [Notation] 
 	// This method may be used to get user info in other interface layers.
 	user, ok := e.Get("user").(*jwt.Token)
 
@@ -73,8 +73,8 @@ func ExtractUseInfoFromToken(userToken *jwt.Token) (UserInToken, error) {
 }
 
 func ApplyJWTMiddleware() echo.MiddlewareFunc {
-	// [Notion]
-	// This method may be used to protect by jwt authentication in other layers.
+	// [Notation]
+	// This method may be used to protect endpoints by jwt authentication in other layers.
 	JWTSecret, err := utils.GetJWTSecret()
 	if err != nil{
 		fmt.Println(err)

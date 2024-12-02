@@ -72,7 +72,7 @@ func (rep *NoteRepositoryInfrastructure) Update(note domain.Note) (*domain.Note,
 	// [Notation]
 	// Even though the note has relevant memos in their entity,
 	// those memos may not be updated ones.
-	// If the note contains full information, the caller must care about the order of calling update methods between note and memos
+	// If the note contains full information, the caller must care about the order of calling update methods between note and memos.
 	// For caller to expect post and update methods to perform similarly, this method doesn't contains memos.
 	
 	resNote := &domain.Note{}

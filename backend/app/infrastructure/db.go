@@ -24,8 +24,9 @@ func (db *MyDB) Connect() (err error) {
 	info := db.getDBInfo()
 
 	db.Client, err = gorm.Open(postgres.Open(info))
-	// gorm close the instance automatically
-	// gorm check the connection automatically when it is initialized.
+	// [Notation]
+	// gorm closes the instance automatically
+	// gorm checks the connection automatically when it is initialized.
 	
 	if err != nil {
 		return fmt.Errorf("failed to connect to the database: %w", err)

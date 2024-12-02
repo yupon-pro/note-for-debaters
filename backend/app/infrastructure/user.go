@@ -31,7 +31,7 @@ func (rep *UserRepositoryInfrastructure) ReadAuth(email string) (*domain.User, e
 	return user, nil
 }
 
-// [Notion]
+// [Notation]
 // Why are models passed to model and first different? 
 // Refer to https://gorm.io/docs/advanced_query.html#Smart-Select-Fields
 
@@ -55,7 +55,7 @@ func (rep *UserRepositoryInfrastructure) Create(user domain.User) (*domain.APIUs
 	return apiUser, nil
 }
 
-// [Notion]
+// [Notation]
 // Why can't I user statement like as "var apiUser *domain.APIUser"?
 // because this variable of apiUser doesn't have any memory, it will be a potential risk of error.
 // It is safe to secure the memory for variable by initializing the value or declaring the value without pointer.
@@ -84,13 +84,13 @@ func (rep *UserRepositoryInfrastructure) Update(user domain.User) (*domain.APIUs
 	return apiUser, nil
 }
 
-// [Notion]
+// [Notation]
 // Even if there is no user that matches to the request, the update method doesn't emit error.
 // So, it is necessary to check the influence for rows after the method calling.
 // Refer to https://gorm.io/docs/update.html
 
-// [Notion]
-// What is Clauses and columns? 
+// [Notation]
+// Clauses and columns are used when you want to updated data after using a update method.? 
 // Refer to https://gorm.io/docs/update.html#Returning-Data-From-Modified-Rows
 
 func (rep *UserRepositoryInfrastructure) Delete(userId int) error {

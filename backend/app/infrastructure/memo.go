@@ -39,6 +39,10 @@ func (rep *MemoRepositoryInfrastructure) UpdateBatch(memos []domain.Memo) ([]dom
 		Create(memos).
 		Scan(resMemos).
 		Error
+	// [Notation]
+	// Although clause onConflict can accept new data and insert it into table, 
+	// this method doesn't assume to accept new data that don't have server memo id.
+	// This method aims to implement bulk update, meaning updating multiple columns of each row to new data.
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to update memo: %w", err)

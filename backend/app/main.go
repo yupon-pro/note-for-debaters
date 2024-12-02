@@ -30,8 +30,9 @@ func main() {
 	// e.Use(middleware.Logger())
 	// e.Use(middleware.Recover())
 
-	mydb.Client.AutoMigrate(&domain.User{})
 	mydb.Client.AutoMigrate(&domain.Note{})
+	mydb.Client.AutoMigrate(&domain.Memo{})
+	mydb.Client.AutoMigrate(&domain.User{})
 	mydb.Client.AutoMigrate(&domain.TmpUser{})
 	mydb.Client.AutoMigrate(&domain.ResetPwd{})
 

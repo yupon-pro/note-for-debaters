@@ -69,7 +69,7 @@ func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser domain.TmpUser) (*domai
 	return userInfo, nil
 }
 
-// [Notion]
+// [Notation]
 // What is clause.OnConflict? 
 // Refer to https://stackoverflow.com/questions/39333102/how-to-create-or-update-a-record-with-gorm
 
