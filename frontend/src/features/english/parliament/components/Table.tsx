@@ -5,8 +5,12 @@ import { Editor, EditorContent, } from '@tiptap/react'
 import { MouseEvent, useEffect, useState } from 'react'
 import Contextmenu from "./ContextMenu";
 import SelectMenu from "./SelectMenu";
+import { useSetAtom } from "jotai";
+import { dirtyAtom } from "@/jotai/editAtom";
 
 export default function TableEditor({ editor }:{ editor: Editor | null }) {
+  const setIsDirty = useSetAtom(dirtyAtom);
+  editor?.on("update", () => setIsDirty(true)); // table change.
   const [displayMenu, setDisplayMenu] = useState({display:"none", top: "0", left: "0"});
 
   useEffect(() => {

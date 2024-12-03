@@ -10,7 +10,7 @@ import { RiLockPasswordLine } from "react-icons/ri"
 import FormSubmitButton from "../../common/components/FormSubmitButton"
 import { useEffect } from "react"
 import { useSetAtom } from "jotai"
-import { signUpFormStatusAtom, stepErrorAtom } from "@/jotai/SignUpStepAtom"
+import { signUpFormStatusAtom, stepErrorAtom } from "@/jotai/signUpStepAtom"
 
 const initialValues = {
   status: "Initial",

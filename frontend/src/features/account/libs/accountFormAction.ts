@@ -3,6 +3,11 @@
 import { deleteUser, patchUser } from "@/libs/auth";
 import { AccountScheme } from "../schemes/accountSchemes";
 import { EditAccountState } from "../types/accountFormTypes";
+import { deleteNote } from "@/libs/debateNote";
+
+export async function removeNote(noteId: string){
+  await deleteNote(noteId)
+}
 
 export async function editAccountFormAction(prevState: EditAccountState, formData: FormData): Promise<EditAccountState>{
   const safeFields = AccountScheme.safeParse({

@@ -16,6 +16,7 @@ export default function Account() {
         <AccordionItem key={index} value={item.value}>
           <AccordionItemTrigger>{item.title}</AccordionItemTrigger>
           <AccordionItemContent>{item.content}</AccordionItemContent>
+          {/* [TODO] implement delete function */}
         </AccordionItem>
       ))}
     </AccordionRoot>

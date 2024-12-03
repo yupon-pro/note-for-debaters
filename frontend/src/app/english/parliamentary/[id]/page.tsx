@@ -1,39 +1,42 @@
 import { auth } from "@/config/auth";
 import Note from "@/features/english/parliament/components/Note";
-import { getNoteWithCommand } from "@/features/english/parliament/libs/clientNote";
-import { getMemosInNote, } from "@/features/english/parliament/libs/clientMemo";
+import { getNoteById } from "@/features/english/parliament/libs/clientNote";
+import { notFound } from "next/navigation";
 
 // this component must be sever component because it call function to fetch resources to server.
 
 export default async function Parliamentary({
-    params
-  }: {
-    params?: {
-      id: string
-    }
-  }){
-  let defaultNote;
-  let defaultMemo;
+  params
+}: {
+  params?: {
+    id: string
+  }
+}){
+  const id = Number(params?.id || null);
 
   const session = await auth();
 
-  if(session?.user){
-    const id = params?.id ? Number(params.id) : null;
-    const note = (id && !Number.isNaN(id)) ? await getNoteWithCommand("single", id) : await getNoteWithCommand("latest")
+  if(!session?.user) notFound();
+  if(isNaN(id)) notFound();
 
-    if(note && !Array.isArray(note)){ 
-      defaultNote = {
-        noteId: note.noteId,
-        title: note.title,
-        script: note.script,
-        table: note.table,
-      };
+  const note = await getNoteById(id);
 
-      const memos = await getMemosInNote(note.noteId);
+  const defaultNote = {
+    noteId: note.noteId,
+    title: note.title,
+    script: note.script,
+    table: note.table,
+  };
 
-      defaultMemo = memos;
-    }
-  }  
+  const defaultMemo = note.memos?.map((memo) => ({
+    ...memo,
+    x: Number(memo.x),
+    y: Number(memo.y),
+    width: Number(memo.width),
+    height: Number(memo.height),
+  }));
+
+  
   
   return (
     <Note defaultNoteData={defaultNote} defaultMemoData={defaultMemo} />

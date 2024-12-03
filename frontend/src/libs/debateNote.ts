@@ -1,12 +1,12 @@
 "use server"
 
 import { auth } from "@/config/auth";
-import { PostNote, UpdateNote } from "@/types/noteType";
+import { Note, PostNote, UpdateNote } from "@/types/noteType";
 import { FetchWithAuth } from "@/utils/fetchClass";
 import { isNote, isNotes } from "@/utils/noteTypeGuard";
 
-export async function getNote(id: number){
-  const uri = `${process.env.SERVER_URI}/note/${id}`;
+export async function getNote(noteId: number): Promise<Note>{
+  const uri = `${process.env.SERVER_URI}/note/${noteId}`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
 
@@ -27,7 +27,7 @@ export async function getNote(id: number){
   }
 }
 
-export async function getLatestNote(){
+export async function getLatestNote(): Promise<Note>{
   const uri = `${process.env.SERVER_URI}/note/latest`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
@@ -49,7 +49,7 @@ export async function getLatestNote(){
   }
 }
 
-export async function getNotes(){
+export async function getNotes(): Promise<Note[]>{
   const uri = `${process.env.SERVER_URI}/note`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
@@ -71,7 +71,7 @@ export async function getNotes(){
   }
 }
 
-export async function postNote(note: PostNote ){
+export async function postNote(note: PostNote ): Promise<Note>{
   const uri = `${process.env.SERVER_URI}/note`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");
@@ -94,7 +94,7 @@ export async function postNote(note: PostNote ){
   }
 }
 
-export async function updateNote(note: UpdateNote ){
+export async function updateNote(note: UpdateNote ): Promise<Note>{
   const uri = `${process.env.SERVER_URI}/note/${note.noteId}`;
   const accessToken = (await auth())?.accessToken;
   if(!accessToken) throw new Error("Failed to GEt Access Token");

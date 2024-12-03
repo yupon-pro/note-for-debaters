@@ -10,19 +10,21 @@ import { NoteData } from "../types/note";
 import { editNote, saveNote } from "../libs/clientNote";
 import { useSession } from "next-auth/react";
 import { ClientMemoData } from "@/types/memoType";
-import { editMemos, saveMemos } from "../libs/clientMemo";
 import Memo from "./Memo";
 import { useScriptEditor, useTableEditor } from "../hooks/useEditor";
 import ScriptEditor from "./Script";
 import { defaultNoteScript, defaultNoteTable } from "../consts/defautNoteConsts";
 import SeparateCommandIcons from "./SeparateCommandIcons";
-import TransitionDetection from "@/features/common/components/TransitionDetection";
+import AlertModal from "@/features/common/components/AlertModal";
 import CooperativeCommandIcons from "./CooperativeCommandIcons";
 import { Toaster, toaster } from "@/components/ui/toaster";
+import { dirtyAtom } from "@/jotai/editAtom";
+import { useSetAtom } from "jotai";
 
 export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteData?: NoteData, defaultMemoData?: ClientMemoData[] }){
   const [noteTitle, setNoteTitle] = useState(defaultNoteData?.title);
   const [memoData, setMemoData] = useState<ClientMemoData[]>(defaultMemoData || []);
+  const setIsDirty = useSetAtom(dirtyAtom)
   const noteId = defaultNoteData?.noteId;
   const { data: session } = useSession();
 
@@ -30,7 +32,7 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
   const scriptEditor = useScriptEditor(defaultNoteData?.script);
 
   useEffect(() => {
-    // [Notion]
+    // [Notation]
     // read the data and write if necessary.
     // we have the premise that the local saved data and server updated data are the same.
     const localSavedNoteTitle = localStorage.getItem("title");
@@ -49,10 +51,8 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
 
     if(!isDefaultNoteScript && localSavedNoteScript) {
       scriptEditor?.commands.setContent(localSavedNoteScript);
-
     }else if(!isDefaultNoteScript) {
       scriptEditor?.commands.setContent(defaultNoteScript);
-
     }
 
     if(!isDefaultNoteTable && localSavedNoteTable) {
@@ -60,12 +60,10 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
       // this sentence aims to set content if there is no default data but local data exists.
       // I think this sentence works when the user doesn't sing up but use this project.
       tableEditor?.commands.setContent(localSavedNoteTable);
-
     }else if(!isDefaultNoteTable) {
       // If there is no local data and server data, the default data is set.
       // I think this sentence works when the user uses this for the first time or didn't save the previous note.
       tableEditor?.commands.setContent(defaultNoteTable);
-
     }
 
     if(!isDefaultMemoData && localSavedMemoData) {
@@ -75,63 +73,76 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
 
   }, [tableEditor, scriptEditor, defaultNoteData, defaultMemoData]);
   
-
-  async function handleTextSave(bakeToast?: boolean){
+  async function handleTextSave(){
     // save the note and memo.
+    const title = noteTitle || "no title"
     const noteTable = tableEditor?.getHTML();
     const noteScript = scriptEditor?.getHTML() || "";
-    if(!noteTable || !noteTitle) return;
-    // [Notion]
+    if(!noteTable) return;
+    // [Notation]
     // While the data will be saved in local storage in every saving action,
     // server saving will take place only when the user has singed up.
     if(session?.user){
       const user = session.user;
-      let noteAction;
+
+      let noteAction: () => Promise<void>;
       if(noteId) {
-        noteAction = async () => await editNote({ noteId, title: noteTitle, table: noteTable, script: noteScript });
-      }else{
-        noteAction = async () => await saveNote({ userId: user.id, title: noteTitle, table: noteTable, script: noteScript });
-      }
-
-      if(memoData.length){
-        const saveData = memoData.map((memo) => ({
-          ...memo, 
-          userId: user.id,
-          x: memo.x.toString(),
-          y: memo.y.toString(),
-          width: memo.width.toString(),
-          height: memo.height.toString(),
-        }));
-
-        const registers = saveData.filter((memo) => !memo.serverMemoId);
-        const updates = saveData.filter((memo) => !!memo.serverMemoId);
-
-        if(!bakeToast) return;
-        toaster.promise(Promise.all([noteAction(), saveMemos(registers), editMemos(updates)]), {
-          success: {
-            title: "Successfully saved!",
-            description: "Looks great",
-          },
-          error: {
-            title: "Saved failed",
-            description: "Something wrong with the save",
-          },
-          loading: { title: "saving...", description: "Please wait" },
+        const memos = memoData.map((memo) => {
+          const res = {
+            x: memo.x,
+            y: memo.y,
+            width: memo.width,
+            height: memo.height,
+            content: memo.content,
+            clientMemoId: memo.clientMemoId,
+            noteId,
+            userId: user.id,
+          }
+          if(memo.serverMemoId) Object.assign(res, {serverMemoId: memo.serverMemoId})
+          return res  
         });
+        noteAction = async () => await editNote({ noteId, title, table: noteTable, script: noteScript, memos });
+        // [Notation]
+        // Once the note is saved, there is always note id.
+        // However, the memos maybe new ones or exiting ones.
+        // The backend can accept both types because it uses upsert system as far as memos are concerned.
+      }else{
+        const memos = memoData.map((memo) => ({
+          x: memo.x,
+          y: memo.y,
+          width: memo.width,
+          height: memo.height,
+          content: memo.content,
+          clientMemoId: memo.clientMemoId,
+          userId: user.id,
+        }));
+        noteAction = async () => await saveNote({ userId: user.id, title, table: noteTable, script: noteScript, memos });
       }
+
+      toaster.promise(noteAction, {
+        success: {
+          title: "Successfully saved!",
+          description: "Looks great",
+        },
+        error: {
+          title: "Saved failed",
+          description: "Something wrong with the save",
+        },
+        loading: { title: "saving...", description: "Please wait" },
+      });
+      
     }else{
-      if(!bakeToast) return;
       toaster.create({
         title: "Your date is saved only locally.",
         type: "success",
       });
     }
     
-    localStorage.setItem("title", noteTitle);
+    localStorage.setItem("title", title);
     localStorage.setItem("table", noteTable);
     localStorage.setItem("script", noteScript);
     localStorage.setItem("memo", JSON.stringify(memoData));
-
+    setIsDirty(false);
   }
 
   function handleAddMemo(e: MouseEvent<HTMLButtonElement>){
@@ -145,12 +156,13 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
       x:e.pageX - 150,
       y:e.pageY - 100,
     }
-    setMemoData((prev) => !prev ? ([defaultData]) : ([ ...prev, defaultData ]))
+    setMemoData((prev) => !prev ? ([ defaultData ]) : ([ ...prev, defaultData ]))
+    setIsDirty(true); // memo changed. (add memo.)
   }
 
   return(
     <>
-      <VStack>
+      <VStack w="100%">
         <HStack px={1} w="full" justifyContent="space-between">
           <Input
             display="block" 
@@ -159,28 +171,31 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
             type="text" 
             placeholder="title" 
             value={noteTitle}
-            onChange={(e) => setNoteTitle(e.target.value)}  
+            onChange={(e) => {
+              setIsDirty(true) // title change.
+              setNoteTitle(e.target.value)
+            }}  
           />
           <HStack 
             width={{ md: "40%", lg: "50%", xl: "60%" }}
             justifyContent="flex-end" 
             gap={5} 
           >
-            <Button colorScheme="teal" variant="solid" onClick={() => handleTextSave(true)} >saved</Button>
+            <Button colorScheme="teal" variant="solid" onClick={() => handleTextSave()} >saved</Button>
             <CooperativeCommandIcons editors={[ scriptEditor, tableEditor ]} />
             <SeparateCommandIcons editors={[ scriptEditor, tableEditor ]} />
             <Button colorScheme="teal" variant="solid" onClick={handleAddMemo} >memo</Button>
             <InsertTable editor={tableEditor} />
           </HStack>
         </HStack>
-        {!!memoData.length && memoData.map((memo) => (
+        {memoData.map((memo) => (
           <Memo key={memo.clientMemoId} memoData={memo} setMemoData={setMemoData} />
         ))}
         <ScriptEditor editor={scriptEditor} />
         <TableEditor editor={tableEditor} />
       </VStack>
       <Toaster  />
-      <TransitionDetection callable={handleTextSave} />
+      <AlertModal/>
     </>
   );
 }

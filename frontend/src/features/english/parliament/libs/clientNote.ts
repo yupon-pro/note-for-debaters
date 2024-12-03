@@ -1,23 +1,12 @@
-import { getLatestNote, getNote,  postNote, updateNote } from "@/libs/debateNote";
+import {  getLatestNote, getNote,  postNote, updateNote } from "@/libs/debateNote";
 import { PostNote, UpdateNote } from "@/types/noteType";
 
-export async function getNoteWithCommand(command: "latest" | "single", id?: number) {
-  let data;
-  switch (command) {
-    case "latest":
-      data = await getLatestNote();
-      break;
+export async function getNoteByLatest() {
+  return await getLatestNote();
+}
 
-    case "single":
-      if(id){
-        data = await getNote(id);
-      }
-      break;
-  
-    default:
-      break;
-  }
-  return data;
+export async function getNoteById(id: number) {
+  return await getNote(id);
 }
 
 export async function saveNote(note: PostNote){
@@ -28,5 +17,3 @@ export async function saveNote(note: PostNote){
 export async function editNote(note: UpdateNote){
   await updateNote(note);
 }
-
-export async function removeNote(){}

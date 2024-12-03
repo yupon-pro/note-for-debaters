@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import {  DialogActionTrigger, DialogBody, DialogCloseTrigger, DialogContent, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Radio, RadioGroup } from "@/components/ui/radio";
 import PrivacyPolicy from "@/features/common/components/PrivacyPolicy";
-import { consentStatusAtom } from "@/jotai/SignUpStepAtom";
+import { consentStatusAtom } from "@/jotai/signUpStepAtom";
 import { Box, HStack, VStack } from "@chakra-ui/react";
 import { useAtom } from "jotai";
 

@@ -1,9 +1,9 @@
-type obj = {
+type Obj = {
   [key: string ]: string | number;
 }
 
 type Body = {
-  [key: string] : string | number | obj;
+  [key: string] : string | number | Obj | Obj[];
 }
 
 export class FetchWithAuth{

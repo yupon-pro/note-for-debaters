@@ -8,7 +8,7 @@ import { verifyMailCodeFormAction } from "../libs/authFormActions";
 import { Text } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";
-import { mailCodeStatusAtom, stepErrorAtom } from "@/jotai/SignUpStepAtom";
+import { mailCodeStatusAtom, stepErrorAtom } from "@/jotai/signUpStepAtom";
 
 const initialValue = {
   status: "Initial",

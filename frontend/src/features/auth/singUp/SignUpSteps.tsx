@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { consentStatusAtom, mailCodeStatusAtom, signUpFormStatusAtom, stepErrorAtom } from "@/jotai/SignUpStepAtom";
+import { consentStatusAtom, mailCodeStatusAtom, signUpFormStatusAtom, stepErrorAtom } from "@/jotai/signUpStepAtom";
 import { Box, HStack, VStack } from "@chakra-ui/react";
 import { useAtom, } from "jotai";
 import { useEffect, useState } from "react";
