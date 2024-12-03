@@ -162,7 +162,7 @@ export default function Note({defaultNoteData, defaultMemoData} :{ defaultNoteDa
 
   return(
     <>
-      <VStack w="100%">
+      <VStack id="memo-parent">
         <HStack px={1} w="full" justifyContent="space-between">
           <Input
             display="block" 

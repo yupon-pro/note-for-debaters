@@ -6,11 +6,15 @@ import { PopoverRoot, PopoverTrigger, Table } from "@chakra-ui/react"
 import { useState } from "react"
 import { renderToString } from "react-dom/server";
 import { Editor } from '@tiptap/react'
+import { useSetAtom } from "jotai";
+import { dirtyAtom } from "@/jotai/editAtom";
 
 const matrix = new Array(5).fill(0).map(() => [0, 0, 0, 0, 0])
 
 export default function InsertTable({ editor }: { editor: Editor | null}){
   const [highlight, setHighlight] = useState({ row: -1, column: -1 });
+  const [onOnpen, setOnOpen] = useState(false);
+  const setIsDirty = useSetAtom(dirtyAtom);
 
   function handleHighlight(row:number, column:number){
     setHighlight((prev) => ({...prev, row, column}));
@@ -38,17 +42,26 @@ export default function InsertTable({ editor }: { editor: Editor | null}){
     const contentHTML = renderToString(content)
     editor?.commands.clearContent();
     editor?.commands.setContent(contentHTML);
+    setOnOpen(false); // the performance gets stable.
+    setIsDirty(true);
   }
 
   return (
-    <PopoverRoot>
-      <PopoverTrigger asChild >
+    <PopoverRoot 
+      open={onOnpen}
+      onEscapeKeyDown={() => setOnOpen(false)}
+      onFocusOutside={() => setOnOpen(false)}
+      onInteractOutside={() => setOnOpen(false)}
+      onPointerDownOutside={() => setOnOpen(false)}
+    >
+      <PopoverTrigger asChild onClick={() => setOnOpen(true)}>
         <Button colorScheme="teal" size="sm" variant="solid" >Insert</Button>
       </PopoverTrigger>
       <PopoverContent>
-        <PopoverArrow />
-        <PopoverBody>
+        <PopoverArrow color="red.900" />
+        <PopoverBody padding={0}>
           <Table.Root 
+            border="3px solid green"
             borderSpacing={2} 
             size="sm" 
             variant="outline" 
@@ -64,11 +77,11 @@ export default function InsertTable({ editor }: { editor: Editor | null}){
                       onDoubleClick={handleInsertTable}
                       width={10}
                       height={10} 
-                      border="1px solid black"
+                      border="1px solid green"
                       backgroundColor={ 
                         ( 0 <= rowIndex && rowIndex <= highlight.row) && 
                         ( 0 <= cellIndex && cellIndex <= highlight.column) ?
-                        "white" : "gray.500"
+                        "white" : "gray.300"
                       }
                     >
                     </Table.Cell>

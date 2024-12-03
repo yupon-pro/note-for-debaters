@@ -2,21 +2,36 @@
 
 import "@/features/english/parliament/styles/tableStyle.scss";
 import { Editor, EditorContent, } from '@tiptap/react'
-import { MouseEvent, useEffect, useState } from 'react'
+import { CSSProperties, MouseEvent, useEffect, useState } from 'react'
 import Contextmenu from "./ContextMenu";
 import SelectMenu from "./SelectMenu";
 import { useSetAtom } from "jotai";
 import { dirtyAtom } from "@/jotai/editAtom";
 
-export default function TableEditor({ editor }:{ editor: Editor | null }) {
+export default function TableEditor({ 
+  editor,
+  cssProps,
+}:{ 
+  editor: Editor | null,
+  cssProps?: CSSProperties,
+}) {
   const setIsDirty = useSetAtom(dirtyAtom);
   editor?.on("update", () => setIsDirty(true)); // table change.
   const [displayMenu, setDisplayMenu] = useState({display:"none", top: "0", left: "0"});
 
   useEffect(() => {
+    if (!editor) return;
+
     window.addEventListener("click", handleHide);
-    return () => window.removeEventListener("click", handleHide);
-  }, []);
+
+    // クリーンアップ
+    return () => {
+      window.removeEventListener("click", handleHide);
+
+    };
+  }, [editor]);
+  
+
   
   function handleShow(e: MouseEvent<HTMLDivElement>){
     e.preventDefault()
@@ -44,6 +59,7 @@ export default function TableEditor({ editor }:{ editor: Editor | null }) {
       <EditorContent 
         className="note-table"
         editor={editor} 
+        style={cssProps}
         onContextMenu={handleShow}
         onFocus={() => editor?.chain().focus().run()}
       />

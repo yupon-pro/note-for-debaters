@@ -23,7 +23,7 @@ useEffect(() => {
   const handleResize = () => {
     setMemoData((prev) =>
       prev.map((memo) => {
-        const parent = window.document.getElementById("note");
+        const parent = window.document.getElementById("memo-parent");
         console.log(parent);
         if (!parent) return memo;
 

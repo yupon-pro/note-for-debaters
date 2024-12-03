@@ -6,10 +6,56 @@
     /* Table-specific styling */
     table {
       border-collapse: collapse;
-      margin: 0;
+      margin: 0 auto;
       overflow: hidden;
-      table-layout: fixed;
-      width: 100%;
+      word-break: break-all;
+      // word-wrap: break-word;
+      //  table-layout: fixed;
+      //  width: 100%;
+
+      // [Notation]
+      // Because the fixed layout compress the rest columns, prioritizing column which has width,
+      // The layout is often very wrong when the window size changes after the table has been resized.
+      // Thus, in this case, the width is defined specifically.
+
+      @media (900px <= width){
+        col{
+            min-width: 600px;
+            max-width: 900px;
+          }
+      }
+      @media (700px <= width <= 900px){
+        col{
+            min-width: 400px;
+            max-width: 700px;
+          }
+      }
+
+      @media (500px <= width <= 700px){
+        col{
+            min-width: 200px;
+            max-width: 500px;
+          }
+      }
+
+      @media (300px <= width <= 500px){
+        col{
+            min-width: 100px;
+            max-width: 300px;
+          }
+      }
+
+      @media (width < 300px) {
+        col{
+          min-width: 100px;
+          max-width: 300px;
+        }
+      }
+      // [Notation]
+      // If you customize the table using col, 
+      // you will find yourself to fail to use resizing function of table.
+      
+
 
       td{
         border: 1px solid gray;
