@@ -147,6 +147,9 @@ func (n *noteUsecase) UpdateNote(input UpdateNoteInput) (*domain.Note, error) {
       Height: input.Height,
       Content: input.Content,
     }
+		if input.ServerMemoId != 0 {
+			memo.ServerMemoId = input.ServerMemoId
+		}
 		if err := memo.Validate(); err != nil{
 			return nil, err
 		}

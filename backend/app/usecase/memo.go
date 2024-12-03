@@ -15,7 +15,7 @@ type CreateMemoInput struct{
 }
 
 type UpdateMemoInput struct{
-	ServerMemoId int `json:"serverMemoId" form:"serverMemoId"`
+	ServerMemoId int `json:"serverMemoId,omitempty" form:"serverMemoId,omitempty"`
 	NoteId int `json:"noteId" form:"noteId"`
 	CreateMemoInput
 }

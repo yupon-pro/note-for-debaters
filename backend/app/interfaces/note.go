@@ -44,12 +44,12 @@ func (c *NoteController) Show(e echo.Context) error {
 }
 
 func (c *NoteController) ShowAll(e echo.Context) error {
-	id, err := strconv.Atoi(e.Param("id"))
+	uInfo, err := UserInfoViaToken(e)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
 
-	notes, err := c.noteUsecase.ReadAllNotes(id)
+	notes, err := c.noteUsecase.ReadAllNotes(uInfo.UserId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, err)
 	}
