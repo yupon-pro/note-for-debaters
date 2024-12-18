@@ -14,17 +14,20 @@ type UpdateNote struct {
 
 
 type Note struct {
-	NoteId    int       `gorm:"primary_key; AUTO_INCREMENT; column: note_id"`
-	UserId    int       `gorm:"column:user_id"`
-	User      User `gorm:"foreignKey:user_id"`
-	Title     string    `gorm:"column:title; not null"`
-	Table     string    `gorm:"column:table; not null"`
-	Script    string    `gorm:"column:script"`
-	Memos     []Memo    `gorm:"foreignKey:note_id"`
+	NoteId    int `gorm:"primary_key; AUTO_INCREMENT; column: note_id"`
+	UserId    int `gorm:"column:user_id"`
+	User      User `gorm:"foreignKey:UserId"`
+	Title     string `gorm:"column:title; not null"`
+	Table     string `gorm:"column:table; not null"`
+	Script    string `gorm:"column:script"`
+	Memos     []Memo `gorm:"foreignKey:NoteId;"`
 	CreatedAt time.Time `gorm:"autoCreateTime; column:created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime; column:updated_at"`
 }
 
+// [Notation]
+// The note has many memos. This type is so called hay many.
+// Refer to https://gorm.io/docs/has_many.html
 
 func (n Note) Validate() error {
 	if n.Title == "" || n.Table == ""  {

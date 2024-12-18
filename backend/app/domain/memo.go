@@ -7,11 +7,11 @@ import (
 
 
 type Memo struct {
-	ClientMemoId string `gorm:"uniqueIndex; not null; column: client_memo_id"`
+	ClientMemoId string `gorm:"unique; not null; column: client_memo_id"`
 	ServerMemoId int `gorm:"primary_key; AUTO_INCREMENT; column: server_memo_id"`
-	NoteId int `gorm:"column: note_id"`
+	NoteId int `gorm:"column: note_id; not null"`
 	UserId int `gorm:"column: user_id"`
-	User User `gorm:"foreignKey:user_id"`
+	User User `gorm:"foreignKey:UserId"`
 	Content string `gorm:"not null"`
 	X string `gorm:"not null"`
 	Y string `gorm:"not null"`

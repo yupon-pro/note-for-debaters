@@ -59,7 +59,7 @@ func (rep *TmpUserRepositoryInfrastructure) Save(tmpUser domain.TmpUser) (*domai
 				{Name: "password"},
 			}},
 		).
-		Create(tmpUser).
+		Create(&tmpUser).
 		Scan(userInfo).
 		Error
 
